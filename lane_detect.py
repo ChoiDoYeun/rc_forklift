@@ -75,6 +75,9 @@ def sliding_windows(binary_warped, nwindows=9):
     lefty = nonzeroy[left_lane_inds] 
     rightx = nonzerox[right_lane_inds] 
     righty = nonzeroy[right_lane_inds] 
+
+    if len(leftx) == 0 or len(rightx) == 0:
+        return None, None, None, None, None, None, msk
     
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx, 2)
@@ -85,6 +88,9 @@ def sliding_windows(binary_warped, nwindows=9):
     return left_fit, right_fit, lefty, leftx, righty, rightx, msk
 
 def draw_lane_pipeline(image, binary_warped, matrix, left_fit, right_fit):
+    if left_fit is None or right_fit is None:
+        return image
+    
     plot_y = np.linspace(0, binary_warped.shape[0] - 1, binary_warped.shape[0])
     left_fit_x = left_fit[0] * plot_y**2 + left_fit[1] * plot_y + left_fit[2]
     right_fit_x = right_fit[0] * plot_y**2 + right_fit[1] * plot_y + right_fit[2]
