@@ -8,12 +8,11 @@ def capture_frame_on_spacebar():
         print("웹캠을 열 수 없습니다.")
         return
 
-    # 캡쳐할 때 사용할 파일 번호를 입력받습니다.
-    capture_number = int(input("파일 번호를 입력하세요: "))
-    
     # 해상도를 320x240으로 설정합니다.
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+
+    capture_number = 1  # 캡쳐할 때 사용할 초기 파일 번호
 
     while True:
         # 비디오 프레임을 읽습니다.
@@ -30,10 +29,11 @@ def capture_frame_on_spacebar():
         key = cv2.waitKey(1) & 0xFF
         
         if key == 32:  # 스페이스바를 누르면
-            # 입력받은 파일 번호로 파일 이름을 만듭니다.
+            # 파일 번호를 자동으로 증가시키며 파일 이름을 만듭니다.
             filename = f"capture_{capture_number}.png"
             cv2.imwrite(filename, frame)
             print(f"{filename} 저장되었습니다.")
+            capture_number += 1
         
         elif key == ord('q'):  # 'q' 키를 누르면
             break
