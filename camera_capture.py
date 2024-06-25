@@ -2,7 +2,7 @@ import cv2
 
 def capture_frame_on_spacebar():
     # GStreamer를 사용하지 않고 웹캠을 엽니다.
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    cap = cv2.VideoCapture(0)
     
     if not cap.isOpened():
         print("웹캠을 열 수 없습니다.")
