@@ -6,25 +6,32 @@ bus = smbus.SMBus(1)
 address = 0x53
 
 # GY-291 초기 설정
-bus.write_byte_data(address, 0x2D, 0x08)  # 측정 모드 설정
-bus.write_byte_data(address, 0x31, 0x0B)  # 풀 해상도 설정
+try:
+    bus.write_byte_data(address, 0x2D, 0x08)  # 측정 모드 설정
+    bus.write_byte_data(address, 0x31, 0x0B)  # 풀 해상도 설정
+except Exception as e:
+    print(f"초기 설정 중 오류 발생: {e}")
 
 def read_accel():
-    # 각 축의 가속도 데이터를 읽습니다.
-    data = bus.read_i2c_block_data(address, 0x32, 6)
-    x = (data[1] << 8) | data[0]
-    y = (data[3] << 8) | data[2]
-    z = (data[5] << 8) | data[4]
+    try:
+        # 각 축의 가속도 데이터를 읽습니다.
+        data = bus.read_i2c_block_data(address, 0x32, 6)
+        x = (data[1] << 8) | data[0]
+        y = (data[3] << 8) | data[2]
+        z = (data[5] << 8) | data[4]
 
-    # 16비트 값을 2의 보수로 변환합니다.
-    if x & (1 << 15):
-        x -= (1 << 16)
-    if y & (1 << 15):
-        y -= (1 << 16)
-    if z & (1 << 15):
-        z -= (1 << 16)
+        # 16비트 값을 2의 보수로 변환합니다.
+        if x & (1 << 15):
+            x -= (1 << 16)
+        if y & (1 << 15):
+            y -= (1 << 16)
+        if z & (1 << 15):
+            z -= (1 << 16)
 
-    return x, y, z
+        return x, y, z
+    except Exception as e:
+        print(f"데이터 읽기 중 오류 발생: {e}")
+        return 0, 0, 0
 
 try:
     while True:
