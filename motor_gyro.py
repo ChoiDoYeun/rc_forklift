@@ -100,12 +100,14 @@ try:
             x, y, z = read_accel()
             timestamp = time.time() - start_time
             log_accel_data(filename, timestamp, action, x, y, z)
-            time.sleep(1)
+            time.sleep(0.1)
         motor1.stop()
         motor2.stop()
         motor3.stop()
         motor4.stop()
 
+        time.sleep(0.1)
+        
         # Counter-clockwise rotation
         motor1.forward(70)
         motor2.backward(70)
@@ -118,11 +120,12 @@ try:
             x, y, z = read_accel()
             timestamp = time.time() - start_time
             log_accel_data(filename, timestamp, action, x, y, z)
-            time.sleep(1)
+            time.sleep(0.1)
         motor1.stop()
         motor2.stop()
         motor3.stop()
         motor4.stop()
+        time.sleep(0.1)
 
     print("1->3->1->3 동작 완료. 프로그램을 종료합니다.")
 
