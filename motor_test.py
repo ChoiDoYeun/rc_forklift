@@ -34,23 +34,49 @@ GPIO.setmode(GPIO.BCM)
 
 motor1 = MotorController(18, 17, 27)
 motor2 = MotorController(22, 23, 24)
-motor3 = MotorController(12,5,6)
-motor4 = MotorController(16,13,26)
+motor3 = MotorController(12, 5, 6)
+motor4 = MotorController(16, 13, 26)
 
 try:
-    # 제자리에서 90도 회전 (시계 방향)
-    motor1.backward(70)  # 왼쪽 앞 모터 뒤로
-    motor2.forward(70)   # 오른쪽 앞 모터 앞으로
-    motor3.backward(70)  # 왼쪽 뒤 모터 뒤로
-    motor4.forward(70)   # 오른쪽 뒤 모터 앞으로
+    while True:
+        user_input = input("Enter 1 for forward, 2 for clockwise rotation, 3 for counter-clockwise rotation, q to quit: ")
 
-    time.sleep(0.75)  # 회전 시간 조절 (테스트를 통해 적절히 설정)
-
-    # 모터 정지
-    motor1.stop()
-    motor2.stop()
-    motor3.stop()
-    motor4.stop()
+        if user_input == '1':
+            # 직진
+            motor1.forward(70)
+            motor2.forward(70)
+            motor3.forward(70)
+            motor4.forward(70)
+            time.sleep(0.75)
+        
+        elif user_input == '2':
+            # 시계 방향 회전
+            motor1.backward(70)
+            motor2.forward(70)
+            motor3.backward(70)
+            motor4.forward(70)
+            time.sleep(0.75)
+        
+        elif user_input == '3':
+            # 시계 반대 방향 회전
+            motor1.forward(70)
+            motor2.backward(70)
+            motor3.forward(70)
+            motor4.backward(70)
+            time.sleep(0.75)
+        
+        elif user_input == 'q':
+            print("Exiting program.")
+            break
+        
+        else:
+            print("Invalid input. Please enter 1, 2, 3, or q.")
+        
+        # 모터 정지
+        motor1.stop()
+        motor2.stop()
+        motor3.stop()
+        motor4.stop()
 
 except KeyboardInterrupt:
     print("Interrupted by user")
@@ -58,4 +84,6 @@ except KeyboardInterrupt:
 finally:
     motor1.cleanup()
     motor2.cleanup()
+    motor3.cleanup()
+    motor4.cleanup()
     GPIO.cleanup()
