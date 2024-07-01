@@ -87,18 +87,18 @@ filename = "accel_data.txt"
 start_time = time.time()
 
 try:
-        motor1.forward(70)
-        motor2.forward(70)
-        motor3.forward(70)
-        motor4.forward(70)
-        time.sleep(0.75)
+    motor1.forward(70)
+    motor2.forward(70)
+    motor3.forward(70)
+    motor4.forward(70)
+    time.sleep(0.75)
 
-        # 시계 반대 방향 회전
-        motor1.forward(70)
-        motor2.backward(70)
-        motor3.forward(70)
-        motor4.backward(70)
-        time.sleep(0.75)
+    # 시계 반대 방향 회전
+    motor1.forward(70)
+    motor2.backward(70)
+    motor3.forward(70)
+    motor4.backward(70)
+    time.sleep(0.75)
 
     print("1->3->1->3 동작 완료. 프로그램을 종료합니다.")
 
