@@ -12,12 +12,12 @@ class MotorController:
         self.pwm = GPIO.PWM(self.en, 100)
         self.pwm.start(0)
         
-    def forward(self, speed):
+    def backward(self, speed):
         self.pwm.ChangeDutyCycle(speed)
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
 
-    def backward(self, speed):
+    def forward(self, speed):
         self.pwm.ChangeDutyCycle(speed)
         GPIO.output(self.in1, GPIO.LOW)
         GPIO.output(self.in2, GPIO.HIGH)
