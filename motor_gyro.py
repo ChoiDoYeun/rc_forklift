@@ -77,62 +77,57 @@ motor2 = MotorController(22, 23, 24)
 motor3 = MotorController(12, 5, 6)
 motor4 = MotorController(16, 13, 26)
 
-def print_motor_states_and_accel():
-    x, y, z = read_accel()
-    print(f"Motor1: {motor1.state}")
-    print(f"Motor2: {motor2.state}")
-    print(f"Motor3: {motor3.state}")
-    print(f"Motor4: {motor4.state}")
-    print(f"Accel X: {x}, Y: {y}, Z: {z}")
+def log_accel_data(filename, timestamp, action, x, y, z):
+    with open(filename, 'a') as file:
+        file.write(f"{timestamp}, {action}, {x}, {y}, {z}\n")
 
 initialize_sensor()
 
-try:
-    while True:
-        user_input = input("Enter 1 for forward, 2 for clockwise rotation, 3 for counter-clockwise rotation, q to quit: ")
+filename = "accel_data.txt"
+start_time = time.time()
 
-        if user_input == '1':
-            # Forward
-            motor1.forward(72)
-            motor2.forward(70)
-            motor3.forward(70)
-            motor4.forward(70)
-            time.sleep(0.418)
-        
-        elif user_input == '2':
-            # Clockwise rotation
-            motor1.backward(70)
-            motor2.forward(70)
-            motor3.backward(70)
-            motor4.forward(70)
-            time.sleep(0.75)
-        
-        elif user_input == '3':
-            # Counter-clockwise rotation
-            motor1.forward(70)
-            motor2.backward(70)
-            motor3.forward(70)
-            motor4.backward(70)
-            time.sleep(0.75)
-        
-        elif user_input == 'q':
-            print("Exiting program.")
-            break
-        
-        else:
-            print("Invalid input. Please enter 1, 2, 3, or q.")
-        
-        # Stop all motors
+try:
+    for _ in range(4):  # 1->3 동작을 4회 반복
+        # Forward
+        motor1.forward(72)
+        motor2.forward(70)
+        motor3.forward(70)
+        motor4.forward(70)
+        action = "forward"
+        duration = 0.418
+        end_time = time.time() + duration
+        while time.time() < end_time:
+            x, y, z = read_accel()
+            timestamp = time.time() - start_time
+            log_accel_data(filename, timestamp, action, x, y, z)
+            time.sleep(1)
         motor1.stop()
         motor2.stop()
         motor3.stop()
         motor4.stop()
 
-        # Print motor states and accelerometer data
-        print_motor_states_and_accel()
+        # Counter-clockwise rotation
+        motor1.forward(70)
+        motor2.backward(70)
+        motor3.forward(70)
+        motor4.backward(70)
+        action = "counter-clockwise"
+        duration = 0.75
+        end_time = time.time() + duration
+        while time.time() < end_time:
+            x, y, z = read_accel()
+            timestamp = time.time() - start_time
+            log_accel_data(filename, timestamp, action, x, y, z)
+            time.sleep(1)
+        motor1.stop()
+        motor2.stop()
+        motor3.stop()
+        motor4.stop()
+
+    print("1->3->1->3 동작 완료. 프로그램을 종료합니다.")
 
 except KeyboardInterrupt:
-    print("Interrupted by user")
+    print("사용자에 의해 중단됨")
 
 finally:
     motor1.cleanup()
