@@ -38,16 +38,19 @@ motor3 = MotorController(12,5,6)
 motor4 = MotorController(16,13,26)
 
 try:
-    motor1.backward(50)
-    motor2.backward(50)
-    motor3.backward(50)
-    motor4.backward(50)
-    time.sleep(3)
-    motor1.forward(50)
-    motor2.forward(50)
-    motor3.forward(50)
-    motor4.forward(50)
-    time.sleep(3)
+    # 제자리에서 90도 회전 (시계 방향)
+    motor1.backward(50)  # 왼쪽 앞 모터 뒤로
+    motor2.forward(50)   # 오른쪽 앞 모터 앞으로
+    motor3.backward(50)  # 왼쪽 뒤 모터 뒤로
+    motor4.forward(50)   # 오른쪽 뒤 모터 앞으로
+
+    time.sleep(1)  # 회전 시간 조절 (테스트를 통해 적절히 설정)
+
+    # 모터 정지
+    motor1.stop()
+    motor2.stop()
+    motor3.stop()
+    motor4.stop()
 
 except KeyboardInterrupt:
     print("Interrupted by user")
