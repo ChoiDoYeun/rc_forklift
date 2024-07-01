@@ -87,45 +87,18 @@ filename = "accel_data.txt"
 start_time = time.time()
 
 try:
-    for _ in range(4):  # 1->3 동작을 4회 반복
-        # Forward
-        motor1.forward(72)
+        motor1.forward(70)
         motor2.forward(70)
         motor3.forward(70)
         motor4.forward(70)
-        action = "forward"
-        duration = 0.418
-        end_time = time.time() + duration
-        while time.time() < end_time:
-            x, y, z = read_accel()
-            timestamp = time.time() - start_time
-            log_accel_data(filename, timestamp, action, x, y, z)
-            time.sleep(0.1)
-        motor1.stop()
-        motor2.stop()
-        motor3.stop()
-        motor4.stop()
+        time.sleep(0.75)
 
-        time.sleep(0.1)
-        
-        # Counter-clockwise rotation
+        # 시계 반대 방향 회전
         motor1.forward(70)
         motor2.backward(70)
         motor3.forward(70)
         motor4.backward(70)
-        action = "counter-clockwise"
-        duration = 0.75
-        end_time = time.time() + duration
-        while time.time() < end_time:
-            x, y, z = read_accel()
-            timestamp = time.time() - start_time
-            log_accel_data(filename, timestamp, action, x, y, z)
-            time.sleep(0.1)
-        motor1.stop()
-        motor2.stop()
-        motor3.stop()
-        motor4.stop()
-        time.sleep(0.1)
+        time.sleep(0.75)
 
     print("1->3->1->3 동작 완료. 프로그램을 종료합니다.")
 
