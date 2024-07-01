@@ -93,6 +93,12 @@ try:
     motor4.forward(70)
     time.sleep(0.75)
 
+    motor1.stop()
+    motor2.stop()
+    motor3.stop()
+    motor4.stop()
+    time.sleep(0.01)
+
     # 시계 반대 방향 회전
     motor1.forward(70)
     motor2.backward(70)
