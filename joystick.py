@@ -73,24 +73,24 @@ try:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w:
                     motor1.forward(70)
-                    motor2.forward(70)
+                    motor2.forward(0)
                     motor3.forward(70)
                     motor4.forward(70)
                 elif event.key == pygame.K_s:
-                    motor1.backward(70)
+                    motor1.backward(0)
                     motor2.backward(70)
-                    motor3.backward(70)
-                    motor4.backward(70)
+                    motor3.backward(0)
+                    motor4.backward(0)
                 elif event.key == pygame.K_a:
-                    motor1.forward(70)
+                    motor1.forward(0)
                     motor2.forward(0)  # 안쪽 바퀴 속도 낮춤
-                    motor3.forward(0)
-                    motor4.forward(70)  # 안쪽 바퀴 속도 낮춤
+                    motor3.forward(70)
+                    motor4.forward(0)  # 안쪽 바퀴 속도 낮춤
                 elif event.key == pygame.K_d:
                     motor1.forward(0)  # 안쪽 바퀴 속도 낮춤
-                    motor2.forward(70)
-                    motor3.forward(70)  # 안쪽 바퀴 속도 낮춤
-                    motor4.forward(0)
+                    motor2.forward(0)
+                    motor3.forward(0)  # 안쪽 바퀴 속도 낮춤
+                    motor4.forward(70)
                 elif event.key == pygame.K_q:
                     running = False
             elif event.type == pygame.KEYUP:
