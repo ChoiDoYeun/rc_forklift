@@ -13,17 +13,21 @@ kit.servo[3].angle = 90
 kit.servo[4].angle = 0
 
 def main():
-    # 카메라 초기화
-    cap = cv2.VideoCapture(0)
+    # GStreamer를 사용하지 않고 웹캠을 엽니다.
+    cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
     
     if not cap.isOpened():
-        print("Error: Could not open camera.")
+        print("웹캠을 열 수 없습니다.")
         return
+
+    # 해상도를 320x240으로 설정합니다.
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
     while True:
         ret, frame = cap.read()
         if not ret:
-            print("Error: Failed to capture image.")
+            print("프레임을 읽을 수 없습니다.")
             break
 
         # 그레이스케일로 변환
