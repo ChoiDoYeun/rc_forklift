@@ -85,4 +85,19 @@ try:
                 elif event.key == pygame.K_q:
                     running = False
             elif event.type == pygame.KEYUP:
-           
+                if event.key in [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]:
+                    motor1.stop()
+                    motor2.stop()
+                    motor3.stop()
+                    motor4.stop()
+
+except KeyboardInterrupt:
+    print("Interrupted by user")
+
+finally:
+    motor1.cleanup()
+    motor2.cleanup()
+    motor3.cleanup()
+    motor4.cleanup()
+    GPIO.cleanup()
+    pygame.quit()
