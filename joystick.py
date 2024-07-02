@@ -74,8 +74,8 @@ try:
                 if event.key == pygame.K_w:
                     motor1.forward(70)
                     motor2.forward(0)
-                    motor3.forward(70)
-                    motor4.forward(70)
+                    motor3.forward(0)
+                    motor4.forward(0)
                 elif event.key == pygame.K_s:
                     motor1.backward(0)
                     motor2.backward(70)
