@@ -12,22 +12,24 @@ kit.servo[2].angle = 0
 kit.servo[3].angle = 90
 kit.servo[4].angle = 0
 
+def set_servo_angle(servo_number, angle):
+    if 0 <= angle <= 180:
+        kit.servo[servo_number].angle = angle
+    else:
+        print("Angle must be between 0 and 180 degrees")
+
 def main():
-    # GStreamer를 사용하지 않고 웹캠을 엽니다.
-    cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
+    # 카메라 초기화
+    cap = cv2.VideoCapture(0)
     
     if not cap.isOpened():
-        print("웹캠을 열 수 없습니다.")
+        print("Error: Could not open camera.")
         return
-
-    # 해상도를 320x240으로 설정합니다.
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
     while True:
         ret, frame = cap.read()
         if not ret:
-            print("프레임을 읽을 수 없습니다.")
+            print("Error: Failed to capture image.")
             break
 
         # 그레이스케일로 변환
@@ -42,6 +44,15 @@ def main():
         # 'q' 키를 누르면 종료
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+        
+        # 사용자 입력을 기다림 (비차단 방식)
+        if cv2.waitKey(1) & 0xFF == ord('a'):
+            try:
+                servo_number = int(input("Enter servo number (0-4): "))
+                angle = int(input(f"Enter angle for servo {servo_number} (0-180): "))
+                set_servo_angle(servo_number, angle)
+            except ValueError:
+                print("Invalid input. Please enter valid numbers.")
 
     cap.release()
     cv2.destroyAllWindows()
