@@ -1,6 +1,5 @@
 import RPi.GPIO as GPIO
 import time
-from adafruit_servokit import ServoKit
 import pygame
 
 class MotorController:
@@ -41,16 +40,6 @@ motor1 = MotorController(18, 17, 27)
 motor2 = MotorController(22, 23, 24)
 motor3 = MotorController(12, 5, 6)
 motor4 = MotorController(16, 13, 26)
-
-# PCA9685 모듈 초기화 (16채널 서보 컨트롤러 사용)
-kit = ServoKit(channels=16)
-
-# 서보모터 초기 설정
-kit.servo[0].angle = 0
-kit.servo[1].angle = 150
-kit.servo[2].angle = 0
-kit.servo[3].angle = 0
-kit.servo[4].angle = 0
 
 # Pygame 초기화
 pygame.init()
