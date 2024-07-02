@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 from adafruit_servokit import ServoKit
-import keyboard
+import pygame
 
 class MotorController:
     def __init__(self, en, in1, in2):
@@ -49,50 +49,40 @@ kit.servo[2].angle = 0
 kit.servo[3].angle = 0
 kit.servo[4].angle = 0
 
+# Pygame 초기화
+pygame.init()
+screen = pygame.display.set_mode((100, 100))
+
 try:
     print("W: Forward, S: Backward, A: Rotate left, D: Rotate right, Q: Quit")
     
-    while True:
-        if keyboard.is_pressed('w'):
-            # 직진
-            motor1.forward(70)
-            motor2.forward(70)
-            motor3.forward(70)
-            motor4.forward(70)
-        elif keyboard.is_pressed('s'):
-            # 후진
-            motor1.backward(70)
-            motor2.backward(70)
-            motor3.backward(70)
-            motor4.backward(70)
-        elif keyboard.is_pressed('a'):
-            # 시계 반대 방향 회전
-            motor1.backward(70)
-            motor2.forward(70)
-            motor3.backward(70)
-            motor4.forward(70)
-        elif keyboard.is_pressed('d'):
-            # 시계 방향 회전
-            motor1.forward(70)
-            motor2.backward(70)
-            motor3.forward(70)
-            motor4.backward(70)
-        elif keyboard.is_pressed('q'):
-            print("Exiting program.")
-            break
-        else:
-            # 모든 모터 정지
-            motor1.stop()
-            motor2.stop()
-            motor3.stop()
-            motor4.stop()
-
-except KeyboardInterrupt:
-    print("Interrupted by user")
-
-finally:
-    motor1.cleanup()
-    motor2.cleanup()
-    motor3.cleanup()
-    motor4.cleanup()
-    GPIO.cleanup()
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_w:
+                    motor1.forward(70)
+                    motor2.forward(70)
+                    motor3.forward(70)
+                    motor4.forward(70)
+                elif event.key == pygame.K_s:
+                    motor1.backward(70)
+                    motor2.backward(70)
+                    motor3.backward(70)
+                    motor4.backward(70)
+                elif event.key == pygame.K_a:
+                    motor1.backward(70)
+                    motor2.forward(70)
+                    motor3.backward(70)
+                    motor4.forward(70)
+                elif event.key == pygame.K_d:
+                    motor1.forward(70)
+                    motor2.backward(70)
+                    motor3.forward(70)
+                    motor4.backward(70)
+                elif event.key == pygame.K_q:
+                    running = False
+            elif event.type == pygame.KEYUP:
+           
