@@ -63,7 +63,7 @@ def stop_motors():
     motor4.stop()
 
 try:
-    print("W: Forward, S: Backward, A: Rotate left, D: Rotate right, Q: Quit")
+    print("W: Forward, X: Backward, A: Rotate left, D: Rotate right, S: Stop, Q: Quit")
     
     running = True
     while running:
@@ -73,28 +73,30 @@ try:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w:
                     motor1.forward(70)
-                    motor2.forward(0)
-                    motor3.forward(0)
-                    motor4.forward(0)
-                elif event.key == pygame.K_s:
-                    motor1.backward(0)
-                    motor2.backward(70)
-                    motor3.backward(0)
-                    motor4.backward(0)
-                elif event.key == pygame.K_a:
-                    motor1.forward(0)
-                    motor2.forward(0)  # 안쪽 바퀴 속도 낮춤
+                    motor2.forward(70)
                     motor3.forward(70)
-                    motor4.forward(0)  # 안쪽 바퀴 속도 낮춤
-                elif event.key == pygame.K_d:
-                    motor1.forward(0)  # 안쪽 바퀴 속도 낮춤
-                    motor2.forward(0)
-                    motor3.forward(0)  # 안쪽 바퀴 속도 낮춤
                     motor4.forward(70)
+                elif event.key == pygame.K_x:
+                    motor1.backward(70)
+                    motor2.backward(70)
+                    motor3.backward(70)
+                    motor4.backward(70)
+                elif event.key == pygame.K_a:
+                    motor1.forward(50)  # 좌측 앞 모터 속도 낮춤
+                    motor2.forward(70)  # 우측 앞 모터 속도 높임
+                    motor3.forward(50)  # 좌측 뒤 모터 속도 낮춤
+                    motor4.forward(70)  # 우측 뒤 모터 속도 높임
+                elif event.key == pygame.K_d:
+                    motor1.forward(70)  # 좌측 앞 모터 속도 높임
+                    motor2.forward(50)  # 우측 앞 모터 속도 낮춤
+                    motor3.forward(70)  # 좌측 뒤 모터 속도 높임
+                    motor4.forward(50)  # 우측 뒤 모터 속도 낮춤
+                elif event.key == pygame.K_s:
+                    stop_motors()
                 elif event.key == pygame.K_q:
                     running = False
             elif event.type == pygame.KEYUP:
-                if event.key in [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]:
+                if event.key in [pygame.K_w, pygame.K_x, pygame.K_a, pygame.K_d]:
                     stop_motors()
 
 except KeyboardInterrupt:
