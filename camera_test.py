@@ -32,7 +32,7 @@ def main():
         # 이진화 적용
         _, binary_frame = cv2.threshold(gray_frame, 127, 255, cv2.THRESH_BINARY)
 
-        # 화면에 출력
+        # 이진화된 이미지를 화면에 출력
         cv2.imshow('Binary Camera Stream', binary_frame)
         
         # 'q' 키를 누르면 종료
