@@ -14,18 +14,21 @@ class MotorController:
         self.pwm = GPIO.PWM(self.en, 100)
         self.pwm.start(0)
         
-    def backward(self, speed):
+    def set_speed(self, speed):
         self.pwm.ChangeDutyCycle(speed)
+
+    def backward(self, speed):
+        self.set_speed(speed)
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
 
     def forward(self, speed):
-        self.pwm.ChangeDutyCycle(speed)
+        self.set_speed(speed)
         GPIO.output(self.in1, GPIO.LOW)
         GPIO.output(self.in2, GPIO.HIGH)
 
     def stop(self):
-        self.pwm.ChangeDutyCycle(0)
+        self.set_speed(0)
         GPIO.output(self.in1, GPIO.LOW)
         GPIO.output(self.in2, GPIO.LOW)
 
@@ -53,6 +56,12 @@ kit.servo[4].angle = 0
 pygame.init()
 screen = pygame.display.set_mode((100, 100))
 
+def stop_motors():
+    motor1.stop()
+    motor2.stop()
+    motor3.stop()
+    motor4.stop()
+
 try:
     print("W: Forward, S: Backward, A: Rotate left, D: Rotate right, Q: Quit")
     
@@ -73,23 +82,20 @@ try:
                     motor3.backward(70)
                     motor4.backward(70)
                 elif event.key == pygame.K_a:
-                    motor1.backward(70)
-                    motor2.forward(70)
-                    motor3.backward(70)
-                    motor4.forward(70)
-                elif event.key == pygame.K_d:
                     motor1.forward(70)
-                    motor2.backward(70)
+                    motor2.forward(50)  # 안쪽 바퀴 속도 낮춤
                     motor3.forward(70)
-                    motor4.backward(70)
+                    motor4.forward(50)  # 안쪽 바퀴 속도 낮춤
+                elif event.key == pygame.K_d:
+                    motor1.forward(50)  # 안쪽 바퀴 속도 낮춤
+                    motor2.forward(70)
+                    motor3.forward(50)  # 안쪽 바퀴 속도 낮춤
+                    motor4.forward(70)
                 elif event.key == pygame.K_q:
                     running = False
             elif event.type == pygame.KEYUP:
                 if event.key in [pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d]:
-                    motor1.stop()
-                    motor2.stop()
-                    motor3.stop()
-                    motor4.stop()
+                    stop_motors()
 
 except KeyboardInterrupt:
     print("Interrupted by user")
