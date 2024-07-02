@@ -1,9 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 from adafruit_servokit import ServoKit
-import sys
-import termios
-import tty
+import keyboard
 
 class MotorController:
     def __init__(self, en, in1, in2):
@@ -34,16 +32,6 @@ class MotorController:
     def cleanup(self):
         self.pwm.stop()
 
-def get_key():
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(fd)
-        key = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    return key
-
 GPIO.setmode(GPIO.BCM)
 
 motor1 = MotorController(18, 17, 27)
@@ -63,47 +51,41 @@ kit.servo[4].angle = 0
 
 try:
     print("W: Forward, S: Backward, A: Rotate left, D: Rotate right, Q: Quit")
+    
     while True:
-        key = get_key()
-        
-        if key == 'w':
+        if keyboard.is_pressed('w'):
             # 직진
             motor1.forward(70)
             motor2.forward(70)
             motor3.forward(70)
             motor4.forward(70)
-        
-        elif key == 's':
+        elif keyboard.is_pressed('s'):
             # 후진
             motor1.backward(70)
             motor2.backward(70)
             motor3.backward(70)
             motor4.backward(70)
-        
-        elif key == 'a':
+        elif keyboard.is_pressed('a'):
             # 시계 반대 방향 회전
             motor1.backward(70)
             motor2.forward(70)
             motor3.backward(70)
             motor4.forward(70)
-        
-        elif key == 'd':
+        elif keyboard.is_pressed('d'):
             # 시계 방향 회전
             motor1.forward(70)
             motor2.backward(70)
             motor3.forward(70)
             motor4.backward(70)
-        
-        elif key == 'q':
+        elif keyboard.is_pressed('q'):
             print("Exiting program.")
             break
-        
-        # 모터 정지
-        time.sleep(0.1)
-        motor1.stop()
-        motor2.stop()
-        motor3.stop()
-        motor4.stop()
+        else:
+            # 모든 모터 정지
+            motor1.stop()
+            motor2.stop()
+            motor3.stop()
+            motor4.stop()
 
 except KeyboardInterrupt:
     print("Interrupted by user")
