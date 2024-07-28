@@ -15,7 +15,7 @@ kit.servo[5].angle = 80
 kit.servo[6].angle = 90
 
 def main():
-    cap = cv2.VideoCapture(0, cv2.CAP_GSTREAMER)
+    cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
     
     if not cap.isOpened():
         print("Error: Could not open camera.")
