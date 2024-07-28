@@ -109,13 +109,13 @@ def main():
                         motor4.backward(70)
                     elif event.key == pygame.K_a:
                         motor1.stop()  # 좌측 앞 모터 속도 낮춤
-                        motor2.forward(70)  # 우측 앞 모터 속도 높임
+                        motor2.forward(40)  # 우측 앞 모터 속도 높임
                         motor3.stop()  # 좌측 뒤 모터 속도 낮춤
-                        motor4.forward(70)  # 우측 뒤 모터 속도 높임
+                        motor4.forward(40)  # 우측 뒤 모터 속도 높임
                     elif event.key == pygame.K_d:
-                        motor1.forward(70)  # 좌측 앞 모터 속도 높임
+                        motor1.forward(40)  # 좌측 앞 모터 속도 높임
                         motor2.stop()      # 우측 앞 모터 멈춤
-                        motor3.forward(70)  # 좌측 뒤 모터 속도 높임
+                        motor3.forward(40)  # 좌측 뒤 모터 속도 높임
                         motor4.stop()      # 우측 뒤 모터 멈춤
                     elif event.key == pygame.K_s:
                         stop_motors()
