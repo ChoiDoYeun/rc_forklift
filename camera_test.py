@@ -15,13 +15,10 @@ kit.servo[5].angle = 80
 kit.servo[6].angle = 90
 
 def main():
-    for i in range(32):  # 최대 32개의 비디오 장치를 시도
-        cap = cv2.VideoCapture(i)
-        if cap.isOpened():
-            print(f"Successfully opened /dev/video{i}")
-            break
-    else:
-        print("Error: Could not open any camera.")
+    cap = cv2.VideoCapture(0, cv2.CAP_GSTREAMER)
+    
+    if not cap.isOpened():
+        print("Error: Could not open camera.")
         return
 
     while True:
