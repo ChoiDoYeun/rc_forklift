@@ -11,6 +11,8 @@ kit.servo[1].angle = 0
 kit.servo[2].angle = 0
 kit.servo[3].angle = 0
 kit.servo[4].angle = 0
+kit.servo[5].angle = 80
+kit.servo[6].angle = 90
 
 def main():
     # 카메라 초기화
