@@ -33,9 +33,15 @@ def main():
         # 화면에 프레임을 출력
         cv2.imshow('Camera Stream', frame)
         
-        # 'q' 키를 누르면 종료
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        # 'q' 키를 누르면 종료, 스페이스바를 누르면 캡처하여 저장
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
             break
+        elif key == ord(' '):  # 스페이스바를 눌렀을 때
+            timestamp = int(time.time())
+            filename = f"capture_{timestamp}.jpg"
+            cv2.imwrite(filename, frame)
+            print(f"Image captured and saved as {filename}")
 
     cap.release()
     cv2.destroyAllWindows()
