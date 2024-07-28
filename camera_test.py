@@ -12,7 +12,7 @@ kit.servo[2].angle = 0
 kit.servo[3].angle = 0
 kit.servo[4].angle = 0
 kit.servo[5].angle = 80
-kit.servo[6].angle = 120
+kit.servo[6].angle = 80
 
 def main():
     for i in range(32):  # 최대 32개의 비디오 장치를 시도
