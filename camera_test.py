@@ -6,12 +6,12 @@ import cv2
 kit = ServoKit(channels=16)
 
 # 서보모터 초기 설정
-kit.servo[0].angle = 0
+kit.servo[0].angle = 60
 kit.servo[1].angle = 0
 kit.servo[2].angle = 0
 kit.servo[3].angle = 0
 kit.servo[4].angle = 0
-kit.servo[5].angle = 80
+kit.servo[5].angle = 90
 kit.servo[6].angle = 90
 
 def main():
