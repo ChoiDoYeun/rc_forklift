@@ -98,24 +98,24 @@ def main():
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_w:
-                        motor1.forward(40)
-                        motor2.forward(40)
-                        motor3.forward(40)
-                        motor4.forward(40)
+                        motor1.forward(70)
+                        motor2.forward(70)
+                        motor3.forward(70)
+                        motor4.forward(70)
                     elif event.key == pygame.K_x:
-                        motor1.backward(40)
-                        motor2.backward(40)
-                        motor3.backward(40)
-                        motor4.backward(40)
+                        motor1.backward(70)
+                        motor2.backward(70)
+                        motor3.backward(70)
+                        motor4.backward(70)
                     elif event.key == pygame.K_a:
                         motor1.stop()  # 좌측 앞 모터 속도 낮춤
-                        motor2.forward(50)  # 우측 앞 모터 속도 높임
+                        motor2.forward(70)  # 우측 앞 모터 속도 높임
                         motor3.stop()  # 좌측 뒤 모터 속도 낮춤
-                        motor4.forward(50)  # 우측 뒤 모터 속도 높임
+                        motor4.forward(70)  # 우측 뒤 모터 속도 높임
                     elif event.key == pygame.K_d:
-                        motor1.forward(50)  # 좌측 앞 모터 속도 높임
+                        motor1.forward(70)  # 좌측 앞 모터 속도 높임
                         motor2.stop()      # 우측 앞 모터 멈춤
-                        motor3.forward(50)  # 좌측 뒤 모터 속도 높임
+                        motor3.forward(70)  # 좌측 뒤 모터 속도 높임
                         motor4.stop()      # 우측 뒤 모터 멈춤
                     elif event.key == pygame.K_s:
                         stop_motors()
