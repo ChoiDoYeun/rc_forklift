@@ -3,6 +3,7 @@ import cv2
 import RPi.GPIO as GPIO
 from adafruit_servokit import ServoKit
 import numpy as np
+from collections import deque
 
 # PCA9685 모듈 초기화 (16채널 서보 컨트롤러 사용)
 kit = ServoKit(channels=16)
@@ -177,6 +178,8 @@ def process_camera_input():
         print("카메라를 열 수 없습니다.")
         return
 
+    recent_turns = deque(maxlen=3)  # 최근 3프레임의 회전 방향 저장
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -184,14 +187,20 @@ def process_camera_input():
 
         # 프레임마다 파이프라인 실행
         turn_direction = main_pipeline(frame)
+        recent_turns.append(turn_direction)
 
-        # 회전 방향에 따른 모터 제어
-        if turn_direction == "좌회전":
+        # 최근 3프레임이 모두 "좌회전"일 경우 1초 동안 좌회전
+        if list(recent_turns) == ["좌회전", "좌회전", "좌회전"]:
             turn_left()
-        elif turn_direction == "우회전":
-            turn_right()
+            time.sleep(1)
         else:
-            go_forward()
+            # 회전 방향에 따른 모터 제어
+            if turn_direction == "좌회전":
+                turn_left()
+            elif turn_direction == "우회전":
+                turn_right()
+            else:
+                go_forward()
 
     cap.release()
     GPIO.cleanup()
