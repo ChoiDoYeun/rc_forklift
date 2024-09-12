@@ -61,9 +61,9 @@ try:
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w:
-                    motor1.forward(40)
+                    motor1.forward(50)
                     motor2.forward(40)
-                    motor3.forward(40)
+                    motor3.forward(50)
                     motor4.forward(40)
                 elif event.key == pygame.K_x:
                     motor1.backward(40)
