@@ -19,7 +19,9 @@ def apply_canny_edge_detection(image):
     canny_edges = cv2.Canny(h_channel, 50, 150)
     return binarize_image(canny_edges)
 
-# 단일 라인 슬라이딩 윈도우 감지
+# 이전 회전 방향을 저장하는 변수
+previous_turn_direction = "직진"  # 초기 값
+
 def sliding_window_single_line(binary_warped, nwindows=9):
     margin = 50
     minpix = 50
@@ -51,10 +53,16 @@ def sliding_window_single_line(binary_warped, nwindows=9):
 
         cv2.rectangle(msk, (win_x_low, win_y_low), (win_x_high, win_y_high), (0, 255, 0), 2)
 
+    if len(line_inds) == 0:
+        return None, None, None, None, None, None
+
     line_inds = np.concatenate(line_inds)
 
     linex = nonzerox[line_inds]
     liney = nonzeroy[line_inds]
+
+    if len(linex) == 0 or len(liney) == 0:
+        return None, None, None, None, None, None
 
     line_fit = np.polyfit(liney, linex, 2)
 
@@ -68,7 +76,6 @@ def sliding_window_single_line(binary_warped, nwindows=9):
 
     return line_fit, liney, linex, msk, bottom, top
 
-# 각도 계산 함수
 def calculate_angle(bottom, top):
     x1, y1 = bottom
     x2, y2 = top
@@ -77,32 +84,45 @@ def calculate_angle(bottom, top):
     angle = np.degrees(np.arctan2((y2 - y1), (x2 - x1)))
     return angle
 
-# 각도에 따른 회전 방향 결정
-def determine_turn(angle, threshold=100):
+def determine_turn(angle, threshold=15):
     if abs(angle) >= threshold:
-        if angle < 0:
+        if angle > 0:
             return "좌회전"
         else:
             return "우회전"
     else:
         return "직진"
-    
+
 def main_pipeline(image):
+    global previous_turn_direction  # 전역 변수를 사용하여 이전 회전 방향을 저장
+
     # Canny 에지 감지 및 바이너리화
     binary_canny = apply_canny_edge_detection(image)
 
     # 슬라이딩 윈도우를 이용한 단일 라인 감지
     line_fit, liney, linex, msk, bottom, top = sliding_window_single_line(binary_canny)
 
+    if bottom is None or top is None:
+        # 감지된 픽셀이 없을 경우 이전 회전 방향을 사용
+        print(f"회전 방향: {previous_turn_direction} (이전 값)")
+        return None, previous_turn_direction
+
     # 각도 계산
     angle = calculate_angle(bottom, top)
 
     # 회전 방향 결정
     turn_direction = determine_turn(angle)
+
+    # 회전 방향을 전역 변수에 저장
+    previous_turn_direction = turn_direction
+
+    # 결과 출력
+    print(f"감지된 라인의 각도: {angle}도")
+    print(f"회전 방향: {turn_direction}")
     
     return angle, turn_direction
 
-# 동영상에서 프레임마다 처리하는 함수
+# 동영상 처리에서 각도 계산 및 회전 방향 출력
 def process_video(video_path):
     cap = cv2.VideoCapture(video_path)
 
@@ -111,11 +131,8 @@ def process_video(video_path):
         return
 
     frame_count = 0  # 프레임 카운터
-    processing_times = []  # 프레임 처리 시간 저장 리스트
 
     while cap.isOpened():
-        start_time = time.time()  # 프레임 처리 시작 시간
-
         ret, frame = cap.read()
         if not ret:
             break  # 더 이상 프레임이 없으면 종료
@@ -126,25 +143,14 @@ def process_video(video_path):
         angle, turn_direction = main_pipeline(frame)
 
         # 프레임 번호와 회전 방향 출력
-        print(f"프레임 {frame_count}: 감지된 각도: {angle:.2f}도, 회전 방향: {turn_direction}")
+        print(f"프레임 {frame_count}: 회전 방향: {turn_direction}")
 
         # 결과 이미지 시각화
         cv2.imshow('Frame', frame)
 
-        # 프레임 처리 완료 시간 측정
-        end_time = time.time()
-        processing_time = end_time - start_time
-        processing_times.append(processing_time)
-
         # 'q'를 누르면 종료
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
-    # 평균 처리 시간을 기반으로 최대 FPS 계산
-    avg_processing_time = sum(processing_times) / len(processing_times)
-    max_fps = 1 / avg_processing_time if avg_processing_time > 0 else 0
-
-    print(f"최대 감지 가능한 FPS: {max_fps:.2f} FPS")
 
     cap.release()
     cv2.destroyAllWindows()
