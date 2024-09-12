@@ -180,30 +180,36 @@ def process_camera_input():
 
     recent_turns = deque(maxlen=3)  # 최근 3프레임의 회전 방향 저장
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
+    try:
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
 
-        # 프레임마다 파이프라인 실행
-        turn_direction = main_pipeline(frame)
-        recent_turns.append(turn_direction)
+            # 프레임마다 파이프라인 실행
+            turn_direction = main_pipeline(frame)
+            recent_turns.append(turn_direction)
 
-        # 최근 3프레임이 모두 "좌회전"일 경우 1초 동안 좌회전
-        if list(recent_turns) == ["좌회전", "좌회전", "좌회전"]:
-            turn_left()
-            time.sleep(1)
-        else:
-            # 회전 방향에 따른 모터 제어
-            if turn_direction == "좌회전":
+            # 최근 3프레임이 모두 "좌회전"일 경우 1초 동안 좌회전
+            if list(recent_turns) == ["좌회전", "좌회전", "좌회전"]:
                 turn_left()
-            elif turn_direction == "우회전":
-                turn_right()
+                time.sleep(1)
             else:
-                go_forward()
+                # 회전 방향에 따른 모터 제어
+                if turn_direction == "좌회전":
+                    turn_left()
+                elif turn_direction == "우회전":
+                    turn_right()
+                else:
+                    go_forward()
 
-    cap.release()
-    GPIO.cleanup()
+    except KeyboardInterrupt:
+        print("키보드 인터럽트 감지: 모터 클린업 실행")
+        stop_motors()
+
+    finally:
+        cap.release()
+        GPIO.cleanup()
 
 # 카메라 입력을 통한 로봇 제어 시작
 process_camera_input()
