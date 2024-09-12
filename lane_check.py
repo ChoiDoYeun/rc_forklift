@@ -84,9 +84,9 @@ def calculate_angle(bottom, top):
     angle = np.degrees(np.arctan2((y2 - y1), (x2 - x1)))
     return angle
 
-def determine_turn(angle, threshold=15):
+def determine_turn(angle, threshold=100):
     if abs(angle) >= threshold:
-        if angle > 0:
+        if angle < 0:
             return "좌회전"
         else:
             return "우회전"
