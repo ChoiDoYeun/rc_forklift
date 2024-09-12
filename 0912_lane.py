@@ -64,9 +64,9 @@ def stop_motors():
     motor4.stop()
 
 def go_forward():
-    motor1.forward(20)  # 모터 속도 설정
+    motor1.forward(40)  # 모터 속도 설정
     motor2.forward(20)
-    motor3.forward(20)
+    motor3.forward(40)
     motor4.forward(20)
 
 def turn_left():
