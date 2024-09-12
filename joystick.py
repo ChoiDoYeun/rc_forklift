@@ -34,6 +34,7 @@ class MotorController:
     def cleanup(self):
         self.pwm.stop()
 
+# GPIO 설정
 GPIO.setmode(GPIO.BCM)
 
 motor1 = MotorController(18, 17, 27)
@@ -44,6 +45,9 @@ motor4 = MotorController(16, 13, 26)
 # Pygame 초기화
 pygame.init()
 screen = pygame.display.set_mode((100, 100))
+
+# 키 누른 시간 기록을 위한 딕셔너리
+key_press_times = {}
 
 def stop_motors():
     motor1.stop()
@@ -60,6 +64,10 @@ try:
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
+                # 키를 누를 때 시간 기록
+                if event.key not in key_press_times:
+                    key_press_times[event.key] = time.time()
+
                 if event.key == pygame.K_w:
                     motor1.forward(50)
                     motor2.forward(40)
@@ -85,11 +93,18 @@ try:
                 elif event.key == pygame.K_q:
                     running = False
             elif event.type == pygame.KEYUP:
+                # 키를 뗄 때 눌린 시간을 계산하여 출력
+                if event.key in key_press_times:
+                    press_duration = time.time() - key_press_times[event.key]
+                    key_name = pygame.key.name(event.key).upper()
+                    print(f"{key_name} 키를 {press_duration:.2f}초 동안 눌렀습니다.")
+                    del key_press_times[event.key]  # 기록된 시간 삭제
+
                 if event.key in [pygame.K_w, pygame.K_x, pygame.K_a, pygame.K_d]:
                     stop_motors()
 
 except KeyboardInterrupt:
-    print("Interrupted by user")
+    print("사용자에 의해 중단되었습니다.")
 
 finally:
     motor1.cleanup()
