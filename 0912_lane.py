@@ -193,7 +193,7 @@ def process_camera_input():
             # 최근 3프레임이 모두 "좌회전"일 경우 1초 동안 좌회전
             if list(recent_turns) == ["좌회전", "좌회전", "좌회전"]:
                 turn_left()
-                time.sleep(1)
+                time.sleep(0.5)
             else:
                 # 회전 방향에 따른 모터 제어
                 if turn_direction == "좌회전":
