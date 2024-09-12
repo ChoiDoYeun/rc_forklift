@@ -66,9 +66,9 @@ try:
                     motor3.forward(50)
                     motor4.forward(40)
                 elif event.key == pygame.K_x:
-                    motor1.backward(40)
+                    motor1.backward(50)
                     motor2.backward(40)
-                    motor3.backward(40)
+                    motor3.backward(50)
                     motor4.backward(40)
                 elif event.key == pygame.K_a:
                     motor1.stop()  # 좌측 앞 모터 속도 낮춤
