@@ -22,6 +22,7 @@ def apply_canny_edge_detection(image):
 # 이전 회전 방향을 저장하는 변수
 previous_turn_direction = "직진"  # 초기 값
 
+# 단일 라인 슬라이딩 윈도우 감지
 def sliding_window_single_line(binary_warped, nwindows=9):
     margin = 50
     minpix = 50
@@ -53,18 +54,20 @@ def sliding_window_single_line(binary_warped, nwindows=9):
 
         cv2.rectangle(msk, (win_x_low, win_y_low), (win_x_high, win_y_high), (0, 255, 0), 2)
 
-    if len(line_inds) == 0:
-        return None, None, None, None, None, None
-
     line_inds = np.concatenate(line_inds)
+
+    # liney와 linex가 비어 있는지 확인
+    if line_inds.size == 0:
+        return None, None, None, msk, None, None  # 빈 배열이면 None 반환
 
     linex = nonzerox[line_inds]
     liney = nonzeroy[line_inds]
 
-    if len(linex) == 0 or len(liney) == 0:
-        return None, None, None, None, None, None
-
-    line_fit = np.polyfit(liney, linex, 2)
+    # 비어 있는 배열이 아닌 경우만 polyfit 적용
+    if len(liney) > 0 and len(linex) > 0:
+        line_fit = np.polyfit(liney, linex, 2)
+    else:
+        return None, None, None, msk, None, None
 
     msk[liney, linex] = [0, 0, 255]
     
@@ -93,28 +96,24 @@ def determine_turn(angle, threshold=100):
     else:
         return "직진"
 
+# 프레임 처리 파이프라인
 def main_pipeline(image):
-    global previous_turn_direction  # 전역 변수를 사용하여 이전 회전 방향을 저장
-
     # Canny 에지 감지 및 바이너리화
     binary_canny = apply_canny_edge_detection(image)
 
     # 슬라이딩 윈도우를 이용한 단일 라인 감지
     line_fit, liney, linex, msk, bottom, top = sliding_window_single_line(binary_canny)
 
-    if bottom is None or top is None:
-        # 감지된 픽셀이 없을 경우 이전 회전 방향을 사용
-        print(f"회전 방향: {previous_turn_direction} (이전 값)")
-        return None, previous_turn_direction
+    # 라인이 감지되지 않은 경우
+    if line_fit is None or bottom is None or top is None:
+        print("라인이 감지되지 않음: 기본적으로 좌회전으로 처리합니다.")
+        return None, "좌회전"
 
     # 각도 계산
     angle = calculate_angle(bottom, top)
 
     # 회전 방향 결정
     turn_direction = determine_turn(angle)
-
-    # 회전 방향을 전역 변수에 저장
-    previous_turn_direction = turn_direction
 
     # 결과 출력
     print(f"감지된 라인의 각도: {angle}도")
