@@ -70,16 +70,16 @@ def go_forward():
     motor4.forward(20)
 
 def turn_left():
-    motor1.forward(50)
-    motor2.backward(50)
-    motor3.forward(50)
-    motor4.backward(50)
+    motor1.backward(50)  # 좌측 앞 모터 속도 낮춤
+    motor2.forward(50)  # 우측 앞 모터 속도 높임
+    motor3.backward(50)  # 좌측 뒤 모터 속도 낮춤
+    motor4.forward(50)  # 우측 뒤 모터 속도 높임
 
 def turn_right():
-    motor1.backward(50)
-    motor2.forward(50)
-    motor3.backward(50)
-    motor4.forward(50)
+    motor1.forward(50)  # 좌측 앞 모터 속도 높임
+    motor2.backward(50)     # 우측 앞 모터 멈춤
+    motor3.forward(50)  # 좌측 뒤 모터 속도 높임
+    motor4.backward(50)      # 우측 뒤 모터 멈춤
 
 # 카메라 입력 처리 및 모터 제어 부분
 def binarize_image(image):
