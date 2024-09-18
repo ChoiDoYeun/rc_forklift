@@ -43,7 +43,7 @@ GPIO.setmode(GPIO.BCM)
 
 # 모터 초기화 (왼쪽 모터: motor1, 오른쪽 모터: motor2)
 motor1 = MotorController(18, 17, 27)  # 모터1: en(18), in1(17), in2(27)
-motor2 = MotorController(16, 13, 26)  # 모터2: en(22), in1(23), in2(24)
+motor2 = MotorController(16, 13, 26)  # 모터2: en(16), in1(13), in2(26)
 
 # PCA9685 모듈 초기화 (서보모터)
 kit = ServoKit(channels=16)
@@ -63,7 +63,7 @@ joystick.init()
 
 # 속도 및 서보모터 각도 초기값 설정
 servo_angle = 90  # 서보모터 각도 (중립)
-speed = 0  # 속도
+speed = 15  # 초기 속도를 15로 설정
 
 # 메인 루프
 running = True
@@ -94,7 +94,7 @@ while running:
 
         # 버튼 9를 눌러 정지
         if event.type == pygame.JOYBUTTONDOWN:
-            if event.button == 10:  # 버튼 9: 정지 버튼
+            if event.button == 10:  # 버튼 10: 정지 버튼
                 speed = 0  # 속도 정지
                 motor1.stop()
                 motor2.stop()
@@ -111,7 +111,7 @@ while running:
         motor1.forward(speed)
         motor2.forward(speed)
         print(f"속도 하강 중: {speed}")
-        time.sleep(0.5)  # 0.1초마다 속도 하강
+        time.sleep(0.5)  # 0.5초마다 속도 하강
 
 # Pygame 종료
 pygame.quit()
