@@ -4,7 +4,6 @@ import time
 # GPIO 설정
 GPIO.setmode(GPIO.BCM)
 
-# 모터 제어 클래스
 class MotorController:
     def __init__(self, en, in1, in2):
         self.en = en
@@ -13,23 +12,31 @@ class MotorController:
         GPIO.setup(self.en, GPIO.OUT)
         GPIO.setup(self.in1, GPIO.OUT)
         GPIO.setup(self.in2, GPIO.OUT)
-        self.pwm = GPIO.PWM(self.en, 100)  # PWM 주파수 100Hz
+        self.pwm = GPIO.PWM(self.en, 100)
         self.pwm.start(0)
-
-    def forward(self, speed):
-        GPIO.output(self.in1, GPIO.HIGH)
-        GPIO.output(self.in2, GPIO.LOW)
+        
+    def set_speed(self, speed):
         self.pwm.ChangeDutyCycle(speed)
 
     def backward(self, speed):
+        self.set_speed(speed)
+        GPIO.output(self.in1, GPIO.HIGH)
+        GPIO.output(self.in2, GPIO.LOW)
+
+    def forward(self, speed):
+        self.set_speed(speed)
         GPIO.output(self.in1, GPIO.LOW)
         GPIO.output(self.in2, GPIO.HIGH)
-        self.pwm.ChangeDutyCycle(speed)
 
     def stop(self):
+        self.set_speed(0)
         GPIO.output(self.in1, GPIO.LOW)
         GPIO.output(self.in2, GPIO.LOW)
-        self.pwm.ChangeDutyCycle(0)
+
+    def cleanup(self):
+        self.pwm.stop()
+
+GPIO.setmode(GPIO.BCM)
 
 # 모터 초기화 (왼쪽 모터: motor1, 오른쪽 모터: motor2)
 motor1 = MotorController(18, 17, 27)  # 모터1: en(18), in1(17), in2(27)
