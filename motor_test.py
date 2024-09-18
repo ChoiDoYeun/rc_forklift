@@ -40,7 +40,8 @@ GPIO.setmode(GPIO.BCM)
 
 # 모터 초기화 (왼쪽 모터: motor1, 오른쪽 모터: motor2)
 motor1 = MotorController(18, 17, 27)  # 모터1: en(18), in1(17), in2(27)
-motor2 = MotorController(22, 23, 24)  # 모터2: en(22), in1(23), in2(24)
+motor2 = MotorController(16, 13, 26)  # 모터2: en(22), in1(23), in2(24)
+
 
 # 모터 테스트
 try:
