@@ -94,7 +94,7 @@ while running:
 
         # 버튼 9를 눌러 정지
         if event.type == pygame.JOYBUTTONDOWN:
-            if event.button == 9:  # 버튼 9: 정지 버튼
+            if event.button == 10:  # 버튼 9: 정지 버튼
                 speed = 0  # 속도 정지
                 motor1.stop()
                 motor2.stop()
@@ -111,7 +111,7 @@ while running:
         motor1.forward(speed)
         motor2.forward(speed)
         print(f"속도 하강 중: {speed}")
-        time.sleep(0.1)  # 0.1초마다 속도 하강
+        time.sleep(0.5)  # 0.1초마다 속도 하강
 
 # Pygame 종료
 pygame.quit()
