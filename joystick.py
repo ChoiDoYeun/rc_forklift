@@ -1,7 +1,12 @@
 import RPi.GPIO as GPIO
-import time
 import pygame
+import time
+from adafruit_servokit import ServoKit
 
+# GPIO 설정
+GPIO.setmode(GPIO.BCM)
+
+# 모터 제어 클래스
 class MotorController:
     def __init__(self, en, in1, in2):
         self.en = en
@@ -12,104 +17,96 @@ class MotorController:
         GPIO.setup(self.in2, GPIO.OUT)
         self.pwm = GPIO.PWM(self.en, 100)
         self.pwm.start(0)
-        
-    def set_speed(self, speed):
+
+    def forward(self, speed):
+        GPIO.output(self.in1, GPIO.HIGH)
+        GPIO.output(self.in2, GPIO.LOW)
         self.pwm.ChangeDutyCycle(speed)
 
     def backward(self, speed):
-        self.set_speed(speed)
-        GPIO.output(self.in1, GPIO.HIGH)
-        GPIO.output(self.in2, GPIO.LOW)
-
-    def forward(self, speed):
-        self.set_speed(speed)
         GPIO.output(self.in1, GPIO.LOW)
         GPIO.output(self.in2, GPIO.HIGH)
+        self.pwm.ChangeDutyCycle(speed)
 
     def stop(self):
-        self.set_speed(0)
         GPIO.output(self.in1, GPIO.LOW)
         GPIO.output(self.in2, GPIO.LOW)
+        self.pwm.ChangeDutyCycle(0)
 
-    def cleanup(self):
-        self.pwm.stop()
+# 모터 초기화 (왼쪽 모터: motor1, 오른쪽 모터: motor2)
+motor1 = MotorController(18, 17, 27)  # 모터1: en(18), in1(17), in2(27)
+motor2 = MotorController(22, 23, 24)  # 모터2: en(22), in1(23), in2(24)
 
-# GPIO 설정
-GPIO.setmode(GPIO.BCM)
+# PCA9685 모듈 초기화 (서보모터)
+kit = ServoKit(channels=16)
 
-motor1 = MotorController(18, 17, 27)
-motor2 = MotorController(22, 23, 24)
-motor3 = MotorController(12, 5, 6)
-motor4 = MotorController(16, 13, 26)
+# 서보모터 초기 설정 (스티어링 휠, 채널 0 사용)
+kit.servo[0].angle = 90  # 초기 서보모터 각도 (중립)
 
 # Pygame 초기화
 pygame.init()
-screen = pygame.display.set_mode((100, 100))
 
-# 키 누른 시간 기록을 위한 딕셔너리
-key_press_times = {}
+# 조이스틱 초기화
+pygame.joystick.init()
 
-def stop_motors():
-    motor1.stop()
-    motor2.stop()
-    motor3.stop()
-    motor4.stop()
+# 첫 번째 조이스틱을 선택
+joystick = pygame.joystick.Joystick(0)
+joystick.init()
 
-try:
-    print("W: Forward, X: Backward, A: Rotate left, D: Rotate right, S: Stop, Q: Quit")
-    
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                # 키를 누를 때 시간 기록
-                if event.key not in key_press_times:
-                    key_press_times[event.key] = time.time()
+# 속도 및 서보모터 각도 초기값 설정
+servo_angle = 90  # 서보모터 각도 (중립)
+speed = 0  # 속도
 
-                if event.key == pygame.K_w:
-                    motor1.forward(50)
-                    motor2.forward(40)
-                    motor3.forward(50)
-                    motor4.forward(40)
-                elif event.key == pygame.K_x:
-                    motor1.backward(50)
-                    motor2.backward(35)
-                    motor3.backward(50)
-                    motor4.backward(35)
-                elif event.key == pygame.K_a:
-                    motor1.backward(50)  # 좌측 앞 모터 속도 낮춤
-                    motor2.forward(50)  # 우측 앞 모터 속도 높임
-                    motor3.backward(50)  # 좌측 뒤 모터 속도 낮춤
-                    motor4.forward(50)  # 우측 뒤 모터 속도 높임
-                elif event.key == pygame.K_d:
-                    motor1.forward(50)  # 좌측 앞 모터 속도 높임
-                    motor2.backward(50)     # 우측 앞 모터 멈춤
-                    motor3.forward(50)  # 좌측 뒤 모터 속도 높임
-                    motor4.backward(50)      # 우측 뒤 모터 멈춤
-                elif event.key == pygame.K_s:
-                    stop_motors()
-                elif event.key == pygame.K_q:
-                    running = False
-            elif event.type == pygame.KEYUP:
-                # 키를 뗄 때 눌린 시간을 계산하여 출력
-                if event.key in key_press_times:
-                    press_duration = time.time() - key_press_times[event.key]
-                    key_name = pygame.key.name(event.key).upper()
-                    print(f"{key_name} 키를 {press_duration:.2f}초 동안 눌렀습니다.")
-                    del key_press_times[event.key]  # 기록된 시간 삭제
+# 메인 루프
+running = True
+while running:
+    for event in pygame.event.get():
+        # 좌측 스틱 (서보모터 각도 제어: 축 0)
+        if event.type == pygame.JOYAXISMOTION:
+            if event.axis == 0:  # 좌측 스틱 좌우
+                axis_value = joystick.get_axis(0)  # 축 0: 좌측 스틱 좌우 움직임
+                servo_angle = (axis_value + 1) * 90  # 서보모터 각도 0 ~ 180도
+                servo_angle = max(0, min(180, servo_angle))  # 각도 제한
+                kit.servo[0].angle = servo_angle  # 서보모터 각도 설정
+                print(f"서보 각도: {servo_angle}")
 
-                if event.key in [pygame.K_w, pygame.K_x, pygame.K_a, pygame.K_d]:
-                    stop_motors()
+            # 우측 스틱 위아래 (속도 제어: 축 3)
+            if event.axis == 3:  # 우측 스틱 위아래
+                axis_value = joystick.get_axis(3)  # 축 3: 우측 스틱 위아래
+                if axis_value < -0.1:  # 스틱을 위로 올리면
+                    speed = min(speed + 1, 100)  # 속도 증가, 최대 100%
+                    motor1.forward(speed)
+                    motor2.forward(speed)
+                    print(f"속도 상승: {speed}")
+                elif axis_value > 0.1:  # 스틱을 아래로 내리면
+                    speed = max(speed - 1, 0)  # 속도 감소, 최소 0%
+                    motor1.forward(speed)
+                    motor2.forward(speed)
+                    print(f"속도 감소: {speed}")
 
-except KeyboardInterrupt:
-    print("사용자에 의해 중단되었습니다.")
+        # 버튼 9를 눌러 정지
+        if event.type == pygame.JOYBUTTONDOWN:
+            if event.button == 9:  # 버튼 9: 정지 버튼
+                speed = 0  # 속도 정지
+                motor1.stop()
+                motor2.stop()
+                print("정지 버튼을 눌렀습니다. 속도: 0")
 
-finally:
-    motor1.cleanup()
-    motor2.cleanup()
-    motor3.cleanup()
-    motor4.cleanup()
-    GPIO.cleanup()
-    pygame.quit()
+        # 종료 이벤트 처리
+        elif event.type == pygame.QUIT:
+            running = False
+
+    # 우측 스틱이 중립일 때도 속도 하강
+    axis_value = joystick.get_axis(3)
+    if -0.1 < axis_value < 0.1:  # 중립 상태일 때
+        speed = max(speed - 0.5, 0)  # 속도를 점진적으로 하강
+        motor1.forward(speed)
+        motor2.forward(speed)
+        print(f"속도 하강 중: {speed}")
+        time.sleep(0.1)  # 0.1초마다 속도 하강
+
+# Pygame 종료
+pygame.quit()
+
+# GPIO 정리
+GPIO.cleanup()
