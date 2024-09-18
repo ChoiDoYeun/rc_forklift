@@ -15,27 +15,35 @@ class MotorController:
         GPIO.setup(self.en, GPIO.OUT)
         GPIO.setup(self.in1, GPIO.OUT)
         GPIO.setup(self.in2, GPIO.OUT)
-        self.pwm = GPIO.PWM(self.en, 100)
+        self.pwm = GPIO.PWM(self.en, 100)  # PWM 주파수 100Hz
         self.pwm.start(0)
 
+    def set_speed(self, speed):
+        self.pwm.ChangeDutyCycle(speed)
+
     def forward(self, speed):
+        self.set_speed(speed)
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
-        self.pwm.ChangeDutyCycle(speed)
 
     def backward(self, speed):
+        self.set_speed(speed)
         GPIO.output(self.in1, GPIO.LOW)
         GPIO.output(self.in2, GPIO.HIGH)
-        self.pwm.ChangeDutyCycle(speed)
 
     def stop(self):
+        self.set_speed(0)
         GPIO.output(self.in1, GPIO.LOW)
         GPIO.output(self.in2, GPIO.LOW)
-        self.pwm.ChangeDutyCycle(0)
+
+    def cleanup(self):
+        self.pwm.stop()
+
+GPIO.setmode(GPIO.BCM)
 
 # 모터 초기화 (왼쪽 모터: motor1, 오른쪽 모터: motor2)
 motor1 = MotorController(18, 17, 27)  # 모터1: en(18), in1(17), in2(27)
-motor2 = MotorController(22, 23, 24)  # 모터2: en(22), in1(23), in2(24)
+motor2 = MotorController(16, 13, 26)  # 모터2: en(22), in1(23), in2(24)
 
 # PCA9685 모듈 초기화 (서보모터)
 kit = ServoKit(channels=16)
