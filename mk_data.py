@@ -29,11 +29,6 @@ class MotorController:
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
 
-    def backward(self, speed):
-        self.set_speed(speed)
-        GPIO.output(self.in1, GPIO.LOW)
-        GPIO.output(self.in2, GPIO.HIGH)
-
     def stop(self):
         self.set_speed(0)
         GPIO.output(self.in1, GPIO.LOW)
@@ -106,7 +101,7 @@ def stop_saving():
 
 # 서보모터 각도 초기값 설정
 servo_angle = 90  # 스티어링 서보모터 중립
-speed = 0  # 초기 속도 값 선언
+speed = 70  # 모터 속도를 70으로 고정
 
 # 메인 루프
 running = True
@@ -114,8 +109,7 @@ while running:
     for event in pygame.event.get():
         # 버튼 10을 눌러 정지
         if event.type == pygame.JOYBUTTONDOWN:
-            if event.button == 10:  # 버튼 9: 정지 버튼
-                speed = 0  # 속도 정지
+            if event.button == 10:  # 버튼 10 : 정지 버튼
                 motor1.stop()
                 motor2.stop()
                 print("정지 버튼을 눌렀습니다. 속도: 0")
@@ -146,16 +140,14 @@ while running:
     servo_angle = (1 - axis_value) * 35 + 55  # 각도를 55 ~ 125도 범위로 변환
     servo_angle = max(55, min(125, servo_angle))  # 각도를 55 ~ 125도로 제한
     kit.servo[0].angle = servo_angle  # 스티어링 서보모터 각도 설정
+    print(f"스티어링 각도: {servo_angle}")
 
-    axis_value = joystick.get_axis(3)  # 우측 스틱 (속도 제어)
+    # 우측 스틱 위아래 (속도 제어)
+    axis_value = joystick.get_axis(3)  # 축 3: 우측 스틱 위아래
     if axis_value < -0.1:  # 스틱을 위로 올리면
-        speed = min(max(speed + 1, 50), 100)  # 속도 증가, 최소 50, 최대 100%
-        motor1.forward(speed)
+        motor1.forward(speed)  # 속도 70으로 설정
         motor2.forward(speed)
-    elif axis_value > 0.1:  # 스틱을 아래로 내리면
-        speed = max(speed - 1, 0)  # 속도 감소, 최소 0%
-        motor1.forward(speed)
-        motor2.forward(speed)
+        print(f"모터 속도 유지: {speed}")
 
     # 프레임 캡처 및 CSV 저장 (버튼 3을 눌렀을 때만)
     if saving_data:
@@ -170,6 +162,7 @@ while running:
         # CSV 파일에 데이터 저장
         csv_writer.writerow([frame_filename, servo_angle, speed])
 
+       
         frame_count += 1
         print(f"프레임 {frame_filename} 저장 완료")
 
