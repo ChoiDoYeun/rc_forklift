@@ -39,8 +39,6 @@ class MotorController:
     def cleanup(self):
         self.pwm.stop()
 
-GPIO.setmode(GPIO.BCM)
-
 # 모터 초기화 (왼쪽 모터: motor1, 오른쪽 모터: motor2)
 motor1 = MotorController(18, 17, 27)  # 모터1: en(18), in1(17), in2(27)
 motor2 = MotorController(16, 13, 26)  # 모터2: en(16), in1(13), in2(26)
@@ -63,6 +61,7 @@ joystick.init()
 
 # 서보모터 각도 초기값 설정
 servo_angle = 90  # 서보모터 각도 (중립)
+speed = 0  # 초기 속도 값 선언
 
 # 메인 루프
 running = True
