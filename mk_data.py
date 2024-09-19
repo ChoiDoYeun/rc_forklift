@@ -54,7 +54,7 @@ kit.servo[0].angle = 90  # 스티어링 휠 서보모터 중립 (채널 0)
 
 # 카메라 조향용 서보모터 (채널 1과 채널 2 사용)
 kit.servo[1].angle = 90  # 첫 번째 카메라 서보모터 초기 설정 (채널 1)
-kit.servo[2].angle = 45  # 두 번째 카메라 서보모터 초기 설정 (채널 2)
+kit.servo[2].angle = 60  # 두 번째 카메라 서보모터 초기 설정 (채널 2)
 
 # Pygame 초기화
 pygame.init()
@@ -105,9 +105,18 @@ while running:
                 motor2.stop()
                 print("정지 버튼을 눌렀습니다. 속도: 0")
 
+            # 버튼 0을 눌러 인터럽트
+            if event.button == 0:  # 버튼 0: 주행 인터럽트
+                print("인터럽트 버튼을 눌렀습니다. 주행을 중단합니다.")
+                running = False
+                break
+
         # 종료 이벤트 처리
         elif event.type == pygame.QUIT:
             running = False
+
+    if not running:
+        break
 
     # 카메라에서 프레임 캡처
     ret, frame = cap.read()
