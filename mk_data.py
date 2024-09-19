@@ -3,6 +3,7 @@ import pygame
 import time
 import cv2  # OpenCV 사용
 import csv
+import os  # 폴더 생성에 사용
 from adafruit_servokit import ServoKit
 
 # GPIO 설정
@@ -68,8 +69,22 @@ joystick.init()
 # 카메라 초기화 (OpenCV 사용)
 cap = cv2.VideoCapture(0)  # 카메라 장치 선택
 
+# 주행 폴더 생성
+def create_drive_folder():
+    drive_number = 1
+    while True:
+        folder_name = f'drive_{drive_number:05d}'
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
+            return folder_name
+        drive_number += 1
+
+# 새로운 주행 폴더 생성
+drive_folder = create_drive_folder()
+
 # CSV 파일 작성 준비
-csv_file = open('drive_data.csv', 'w', newline='')
+csv_file_path = os.path.join(drive_folder, 'drive_data.csv')
+csv_file = open(csv_file_path, 'w', newline='')
 csv_writer = csv.writer(csv_file)
 csv_writer.writerow(['frame', 'servo_angle', 'motor_speed'])  # CSV 헤더 작성
 
@@ -125,7 +140,8 @@ while running:
 
     # 프레임 저장
     frame_filename = f'frame_{frame_count:05d}.png'
-    cv2.imwrite(frame_filename, frame_resized)
+    frame_path = os.path.join(drive_folder, frame_filename)
+    cv2.imwrite(frame_path, frame_resized)
 
     # CSV 파일에 데이터 저장
     csv_writer.writerow([frame_filename, servo_angle, speed])
