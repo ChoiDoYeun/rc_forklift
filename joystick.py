@@ -72,7 +72,7 @@ while running:
             if event.axis == 0:  # 좌측 스틱 좌우
                 axis_value = joystick.get_axis(0)  # 축 0: 좌측 스틱 좌우 움직임
                 # 스틱을 왼쪽으로 밀면 각도가 커지고, 오른쪽으로 밀면 각도가 작아짐
-                servo_angle = (axis_value + 1) * 90  # 서보모터 각도 0 ~ 180도
+                servo_angle = (1 - (axis_value + 1)) * 90
                 servo_angle = max(0, min(180, servo_angle))  # 각도 제한
                 kit.servo[0].angle = servo_angle  # 서보모터 각도 설정
                 print(f"서보 각도: {servo_angle}")
