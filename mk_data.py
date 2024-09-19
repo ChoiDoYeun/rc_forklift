@@ -146,19 +146,16 @@ while running:
     servo_angle = (1 - axis_value) * 35 + 55  # 각도를 55 ~ 125도 범위로 변환
     servo_angle = max(55, min(125, servo_angle))  # 각도를 55 ~ 125도로 제한
     kit.servo[0].angle = servo_angle  # 스티어링 서보모터 각도 설정
-    print(f"스티어링 각도: {servo_angle}")
 
     axis_value = joystick.get_axis(3)  # 우측 스틱 (속도 제어)
     if axis_value < -0.1:  # 스틱을 위로 올리면
         speed = min(max(speed + 1, 50), 100)  # 속도 증가, 최소 50, 최대 100%
         motor1.forward(speed)
         motor2.forward(speed)
-        print(f"속도 상승: {speed}")
     elif axis_value > 0.1:  # 스틱을 아래로 내리면
         speed = max(speed - 1, 0)  # 속도 감소, 최소 0%
         motor1.forward(speed)
         motor2.forward(speed)
-        print(f"속도 감소: {speed}")
 
     # 프레임 캡처 및 CSV 저장 (버튼 3을 눌렀을 때만)
     if saving_data:
