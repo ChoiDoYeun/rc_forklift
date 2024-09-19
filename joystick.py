@@ -67,30 +67,6 @@ speed = 0  # 초기 속도 값 선언
 running = True
 while running:
     for event in pygame.event.get():
-        # 좌측 스틱 (서보모터 각도 제어: 축 0)
-        if event.type == pygame.JOYAXISMOTION:
-            if event.axis == 0:  # 좌측 스틱 좌우
-                axis_value = joystick.get_axis(0)  # 축 0: 좌측 스틱 좌우 움직임
-                # 서보모터 각도 계산: 왼쪽으로 밀면 각도가 커지고, 오른쪽으로 밀면 각도가 작아짐
-                servo_angle = (1 - axis_value) * 90
-                servo_angle = max(0, min(180, servo_angle))  # 각도를 0 ~ 180도로 제한
-                kit.servo[0].angle = servo_angle  # 서보모터 각도 설정
-                print(f"서보 각도: {servo_angle}")
-
-            # 우측 스틱 위아래 (속도 제어: 축 3)
-            if event.axis == 3:  # 우측 스틱 위아래
-                axis_value = joystick.get_axis(3)  # 축 3: 우측 스틱 위아래
-                if axis_value < -0.1:  # 스틱을 위로 올리면
-                    speed = min(max(speed + 1, 50), 100)  # 속도 증가, 최소 50, 최대 100%
-                    motor1.forward(speed)
-                    motor2.forward(speed)
-                    print(f"속도 상승: {speed}")
-                elif axis_value > 0.1:  # 스틱을 아래로 내리면
-                    speed = max(speed - 1, 0)  # 속도 감소, 최소 0%
-                    motor1.forward(speed)
-                    motor2.forward(speed)
-                    print(f"속도 감소: {speed}")
-
         # 버튼 10을 눌러 정지
         if event.type == pygame.JOYBUTTONDOWN:
             if event.button == 10:  # 버튼 9: 정지 버튼
@@ -103,14 +79,35 @@ while running:
         elif event.type == pygame.QUIT:
             running = False
 
+    # 스틱 상태 지속적으로 읽기 (좌측 스틱: 스티어링, 우측 스틱: 속도)
+    
+    # 좌측 스틱 (서보모터 각도 제어: 축 0)
+    axis_value = joystick.get_axis(0)  # 축 0: 좌측 스틱 좌우 움직임
+    servo_angle = (1 - axis_value) * 90  # 각도 0 ~ 180도
+    servo_angle = max(0, min(180, servo_angle))  # 각도를 0 ~ 180도로 제한
+    kit.servo[0].angle = servo_angle  # 서보모터 각도 설정
+    print(f"서보 각도: {servo_angle}")
+
+    # 우측 스틱 위아래 (속도 제어: 축 3)
+    axis_value = joystick.get_axis(3)  # 축 3: 우측 스틱 위아래
+    if axis_value < -0.1:  # 스틱을 위로 올리면
+        speed = min(max(speed + 1, 50), 100)  # 속도 증가, 최소 50, 최대 100%
+        motor1.forward(speed)
+        motor2.forward(speed)
+        print(f"속도 상승: {speed}")
+    elif axis_value > 0.1:  # 스틱을 아래로 내리면
+        speed = max(speed - 1, 0)  # 속도 감소, 최소 0%
+        motor1.forward(speed)
+        motor2.forward(speed)
+        print(f"속도 감소: {speed}")
+
     # 우측 스틱이 중립일 때도 속도 하강
-    axis_value = joystick.get_axis(3)
     if -0.1 < axis_value < 0.1:  # 중립 상태일 때
         speed = max(speed - 0.5, 0)  # 속도를 점진적으로 하강
         motor1.forward(speed)
         motor2.forward(speed)
         print(f"속도 하강 중: {speed}")
-        time.sleep(0.5)  # 0.5초마다 속도 하강
+        time.sleep(0.1)  # 0.1초마다 속도 하강
 
 # Pygame 종료
 pygame.quit()
