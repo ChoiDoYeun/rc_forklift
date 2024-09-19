@@ -112,7 +112,6 @@ while running:
             if event.button == 10:  # 버튼 10 : 정지 버튼
                 motor1.stop()
                 motor2.stop()
-                print("정지 버튼을 눌렀습니다. 속도: 0")
 
             # 버튼 0을 눌러 저장 중단
             if event.button == 0:  # 버튼 0: 저장 중단
@@ -140,14 +139,12 @@ while running:
     servo_angle = (1 - axis_value) * 35 + 55  # 각도를 55 ~ 125도 범위로 변환
     servo_angle = max(55, min(125, servo_angle))  # 각도를 55 ~ 125도로 제한
     kit.servo[0].angle = servo_angle  # 스티어링 서보모터 각도 설정
-    print(f"스티어링 각도: {servo_angle}")
 
     # 우측 스틱 위아래 (속도 제어)
     axis_value = joystick.get_axis(3)  # 축 3: 우측 스틱 위아래
     if axis_value < -0.1:  # 스틱을 위로 올리면
         motor1.forward(speed)  # 속도 70으로 설정
         motor2.forward(speed)
-        print(f"모터 속도 유지: {speed}")
 
     # 프레임 캡처 및 CSV 저장 (버튼 3을 눌렀을 때만)
     if saving_data:
