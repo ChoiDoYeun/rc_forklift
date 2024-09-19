@@ -83,8 +83,8 @@ while running:
     
     # 좌측 스틱 (서보모터 각도 제어: 축 0)
     axis_value = joystick.get_axis(0)  # 축 0: 좌측 스틱 좌우 움직임
-    servo_angle = (1 - axis_value) * 90  # 각도 0 ~ 180도
-    servo_angle = max(0, min(180, servo_angle))  # 각도를 0 ~ 180도로 제한
+    servo_angle = (1 - axis_value) * 35 + 55  # 각도를 55 ~ 125도 범위로 변환
+    servo_angle = max(55, min(125, servo_angle))  # 각도를 55 ~ 125도로 제한
     kit.servo[0].angle = servo_angle  # 서보모터 각도 설정
     print(f"서보 각도: {servo_angle}")
 
