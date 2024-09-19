@@ -18,9 +18,9 @@ servo2_angle = 60  # 카메라 서보모터 2 상하 각도
 
 # 키보드로 서보모터 제어하는 함수
 def control_servo(key, servo1_angle, servo2_angle):
-    if key == ord('a'):  # 서보모터 1 각도 감소 (좌)
+    if key == ord('d'):  # 서보모터 1 각도 감소 (좌)
         servo1_angle -= 5
-    elif key == ord('d'):  # 서보모터 1 각도 증가 (우)
+    elif key == ord('a'):  # 서보모터 1 각도 증가 (우)
         servo1_angle += 5
     elif key == ord('w'):  # 서보모터 2 각도 감소 (상)
         servo2_angle -= 5
@@ -34,6 +34,9 @@ def control_servo(key, servo1_angle, servo2_angle):
     # 서보모터 각도 적용
     kit.servo[1].angle = servo1_angle
     kit.servo[2].angle = servo2_angle
+
+    # 서보모터 각도를 출력
+    print(f"Servo1 (Left/Right): {servo1_angle} deg, Servo2 (Up/Down): {servo2_angle} deg")
 
     return servo1_angle, servo2_angle
 
@@ -56,7 +59,7 @@ while True:
     if key == ord('q'):
         break
 
-    # 서보모터 제어
+    # 서보모터 제어 및 각도 출력
     servo1_angle, servo2_angle = control_servo(key, servo1_angle, servo2_angle)
 
 # 종료 처리
