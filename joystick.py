@@ -61,9 +61,8 @@ pygame.joystick.init()
 joystick = pygame.joystick.Joystick(0)
 joystick.init()
 
-# 속도 및 서보모터 각도 초기값 설정
+# 서보모터 각도 초기값 설정
 servo_angle = 90  # 서보모터 각도 (중립)
-speed = 15  # 초기 속도를 15로 설정
 
 # 메인 루프
 running = True
@@ -73,7 +72,7 @@ while running:
         if event.type == pygame.JOYAXISMOTION:
             if event.axis == 0:  # 좌측 스틱 좌우
                 axis_value = joystick.get_axis(0)  # 축 0: 좌측 스틱 좌우 움직임
-                servo_angle = (axis_value + 1) * 90  # 서보모터 각도 0 ~ 180도
+                servo_angle = (1 - (axis_value + 1)) * 90  # 좌우 스티어링을 반대로
                 servo_angle = max(0, min(180, servo_angle))  # 각도 제한
                 kit.servo[0].angle = servo_angle  # 서보모터 각도 설정
                 print(f"서보 각도: {servo_angle}")
@@ -82,7 +81,7 @@ while running:
             if event.axis == 3:  # 우측 스틱 위아래
                 axis_value = joystick.get_axis(3)  # 축 3: 우측 스틱 위아래
                 if axis_value < -0.1:  # 스틱을 위로 올리면
-                    speed = min(speed + 1, 100)  # 속도 증가, 최대 100%
+                    speed = min(max(speed + 1, 50), 100)  # 속도 증가, 최소 50, 최대 100%
                     motor1.forward(speed)
                     motor2.forward(speed)
                     print(f"속도 상승: {speed}")
@@ -92,9 +91,9 @@ while running:
                     motor2.forward(speed)
                     print(f"속도 감소: {speed}")
 
-        # 버튼 9를 눌러 정지
+        # 버튼 10을 눌러 정지
         if event.type == pygame.JOYBUTTONDOWN:
-            if event.button == 10:  # 버튼 10: 정지 버튼
+            if event.button == 10:  # 버튼 9: 정지 버튼
                 speed = 0  # 속도 정지
                 motor1.stop()
                 motor2.stop()
