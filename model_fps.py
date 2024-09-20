@@ -6,25 +6,25 @@ from torchvision import transforms, models
 from PIL import Image
 import numpy as np
 import torch.nn as nn
+from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
 
-# ResNet50 불러오기
-from torchvision.models import resnet50, ResNet50_Weights
-
-# 모델 정의 (학습에서 사용한 모델과 동일해야 함)
+# 모델 정의
 class selfdrivingCNN(nn.Module):
     def __init__(self):
         super(selfdrivingCNN, self).__init__()
         
-        # ResNet50 백본을 사용, 사전 학습된 가중치 로드
-        self.backbone = resnet50(weights=ResNet50_Weights.DEFAULT)
+        # MobileNetV2 백본을 사용, 사전 학습된 가중치 로드
+        self.backbone = mobilenet_v2(weights=MobileNet_V2_Weights.DEFAULT)
         
-        # ResNet의 마지막 FC 레이어를 제거하고 추가 레이어 구성
-        num_ftrs = self.backbone.fc.in_features
-        self.backbone.fc = nn.Identity()
+        # MobileNetV2의 마지막 FC 레이어를 제거하고 추가 레이어 구성
+        num_ftrs = self.backbone.classifier[1].in_features
+        
+        # MobileNetV2의 기존 FC 레이어를 없애고 Identity로 대체
+        self.backbone.classifier = nn.Identity()
         
         # 새로운 FC 레이어들 추가
         self.fc_layers = nn.Sequential(
-            nn.Linear(num_ftrs, 512),
+            nn.Linear(num_ftrs, 512),  # MobileNet 백본 출력 크기에 맞춤
             nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(512, 128),
@@ -34,7 +34,10 @@ class selfdrivingCNN(nn.Module):
         )
         
     def forward(self, x):
+        # MobileNet 백본 통과
         x = self.backbone(x)
+        
+        # 추가 FC 레이어 통과
         x = self.fc_layers(x)
         return x
 
@@ -53,7 +56,7 @@ transform = transforms.Compose([
 ])
 
 # 이미지 경로 (drive_00001 폴더 내 PNG 파일)
-image_folder = 'drive_00001'
+image_folder = 'drive_00005'
 image_files = [f for f in os.listdir(image_folder) if f.endswith('.png')]
 
 # 추론 시간 측정 및 FPS 계산
