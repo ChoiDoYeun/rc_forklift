@@ -8,7 +8,7 @@ onnx_model_path = 'best_model_pruned.onnx'
 net = cv2.dnn.readNetFromONNX(onnx_model_path)
 
 # 테스트할 이미지 폴더 경로 설정
-image_folder = 'data/drive_00001'
+image_folder = 'drive_00001'
 
 # 이미지 전처리 함수
 def preprocess_image(image_path, target_size=(64, 64)):
