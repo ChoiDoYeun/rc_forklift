@@ -2,10 +2,13 @@ import os
 import time
 import torch
 import cv2
-from torchvision import transforms
+from torchvision import transforms, models
 from PIL import Image
 import numpy as np
 import torch.nn as nn
+
+# ResNet50 불러오기
+from torchvision.models import resnet50, ResNet50_Weights
 
 # 모델 정의 (학습에서 사용한 모델과 동일해야 함)
 class selfdrivingCNN(nn.Module):
