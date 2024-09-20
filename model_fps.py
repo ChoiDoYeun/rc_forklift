@@ -6,27 +6,21 @@ from torchvision import transforms, models
 from PIL import Image
 import numpy as np
 import torch.nn as nn
-from torchvision.models import mobilenet_v2, MobileNet_V2_Weights
+from torchvision.models import mobilenet_v3_small, MobileNet_V3_Small_Weights
 
 # 모델 정의
 class selfdrivingCNN(nn.Module):
     def __init__(self):
         super(selfdrivingCNN, self).__init__()
-        
-        # MobileNetV2 백본을 사용, 사전 학습된 가중치 로드
-        self.backbone = mobilenet_v2(weights=MobileNet_V2_Weights.DEFAULT)
-        
-        # MobileNetV2의 출력 클래스를 3개로 수정 (3개의 클래스로 예측)
-        num_ftrs = self.backbone.classifier[1].in_features
-        self.backbone.classifier = nn.Sequential(
-            nn.Dropout(0.2),  # MobileNetV2 기본 드롭아웃
-            nn.Linear(num_ftrs, 3)  # 최종 클래스 수: 3개
-        )
-        
+        # MobileNetV3 백본 사용, 사전 학습된 가중치 로드
+        self.backbone = mobilenet_v3_small(weights=MobileNet_V3_Small_Weights.DEFAULT)
+
+        # 출력 클래스를 3개로 수정
+        num_ftrs = self.backbone.classifier[3].in_features
+        self.backbone.classifier[3] = nn.Linear(num_ftrs, 3)
+
     def forward(self, x):
-        # MobileNetV2를 통과한 결과 리턴
-        x = self.backbone(x)
-        return x
+        return self.backbone(x)
 
 # 장치 설정 (CPU 사용)
 device = torch.device('cpu')
