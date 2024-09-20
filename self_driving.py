@@ -87,9 +87,9 @@ frame = None
 def preprocess_image(image):
     image = cv2.resize(image, (64, 64))  # 이미지 크기 조정
     image = image.astype(np.float32) / 255.0  # [0,1] 범위로 정규화
-    # ImageNet의 mean과 std 사용
-    mean = np.array([0.485, 0.456, 0.406]).reshape(1,1,3)
-    std = np.array([0.229, 0.224, 0.225]).reshape(1,1,3)
+    # 데이터 타입을 np.float32로 지정
+    mean = np.array([0.485, 0.456, 0.406], dtype=np.float32).reshape(1,1,3)
+    std = np.array([0.229, 0.224, 0.225], dtype=np.float32).reshape(1,1,3)
     image = (image - mean) / std  # 정규화
     image = np.transpose(image, (2, 0, 1))  # 채널 순서 변경 (HWC -> CHW)
     image = np.expand_dims(image, axis=0)  # 배치 차원 추가
