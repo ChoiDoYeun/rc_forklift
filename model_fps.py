@@ -16,29 +16,16 @@ class selfdrivingCNN(nn.Module):
         # MobileNetV2 백본을 사용, 사전 학습된 가중치 로드
         self.backbone = mobilenet_v2(weights=MobileNet_V2_Weights.DEFAULT)
         
-        # MobileNetV2의 마지막 FC 레이어를 제거하고 추가 레이어 구성
+        # MobileNetV2의 출력 클래스를 3개로 수정 (3개의 클래스로 예측)
         num_ftrs = self.backbone.classifier[1].in_features
-        
-        # MobileNetV2의 기존 FC 레이어를 없애고 Identity로 대체
-        self.backbone.classifier = nn.Identity()
-        
-        # 새로운 FC 레이어들 추가
-        self.fc_layers = nn.Sequential(
-            nn.Linear(num_ftrs, 512),  # MobileNet 백본 출력 크기에 맞춤
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(512, 128),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(128, 3)  # 3개의 클래스 출력
+        self.backbone.classifier = nn.Sequential(
+            nn.Dropout(0.2),  # MobileNetV2 기본 드롭아웃
+            nn.Linear(num_ftrs, 3)  # 최종 클래스 수: 3개
         )
         
     def forward(self, x):
-        # MobileNet 백본 통과
+        # MobileNetV2를 통과한 결과 리턴
         x = self.backbone(x)
-        
-        # 추가 FC 레이어 통과
-        x = self.fc_layers(x)
         return x
 
 # 장치 설정 (CPU 사용)
