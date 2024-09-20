@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 from torchvision import transforms
 from PIL import Image
+from torchvision.models import resnet50, ResNet50_Weights  # 수정된 부분
 
 # 모터 제어 클래스
 class MotorController:
