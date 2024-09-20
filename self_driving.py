@@ -4,9 +4,9 @@ import torch
 import torch.nn as nn
 import cv2
 import numpy as np
-from torchvision import transforms
+from torchvision import transforms,models
 from PIL import Image
-from torchvision.models import resnet50, ResNet50_Weights  # 수정된 부분
+from torchvision.models import mobilenet_v3_small, MobileNet_V3_Small_Weights
 
 # 모터 제어 클래스
 class MotorController:
@@ -40,33 +40,19 @@ class MotorController:
 motor1 = MotorController(18, 17, 27)  # 모터1: en(18), in1(17), in2(27)
 motor2 = MotorController(16, 13, 26)  # 모터2: en(16), in1(13), in2(26)
 
-# 모델 정의 (학습에서 사용한 모델과 동일해야 함)
+# 모델 정의
 class selfdrivingCNN(nn.Module):
     def __init__(self):
         super(selfdrivingCNN, self).__init__()
-        
-        # ResNet50 백본을 사용, 사전 학습된 가중치 로드
-        self.backbone = resnet50(weights=ResNet50_Weights.DEFAULT)
-        
-        # ResNet의 마지막 FC 레이어를 제거하고 추가 레이어 구성
-        num_ftrs = self.backbone.fc.in_features
-        self.backbone.fc = nn.Identity()
-        
-        # 새로운 FC 레이어들 추가
-        self.fc_layers = nn.Sequential(
-            nn.Linear(num_ftrs, 512),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(512, 128),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(128, 3)  # 3개의 클래스 출력
-        )
-        
+        # MobileNetV3 백본 사용, 사전 학습된 가중치 로드
+        self.backbone = mobilenet_v3_small(weights=MobileNet_V3_Small_Weights.DEFAULT)
+
+        # 출력 클래스를 3개로 수정
+        num_ftrs = self.backbone.classifier[3].in_features
+        self.backbone.classifier[3] = nn.Linear(num_ftrs, 3)
+
     def forward(self, x):
-        x = self.backbone(x)
-        x = self.fc_layers(x)
-        return x
+        return self.backbone(x)
 
 # 장치 설정 (CPU 사용)
 device = torch.device('cpu')
@@ -93,6 +79,7 @@ class_angles = {
 
 # 이미지 전처리 (모델 학습 시와 동일한 전처리 적용)
 transform = transforms.Compose([
+    transforms.Resize((128, 128)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
