@@ -33,7 +33,7 @@ device = torch.device('cpu')
 
 # 모델 로드
 model = selfdrivingCNN().to(device)
-model.load_state_dict(torch.load('best_model.pth', map_location=device))
+model.load_state_dict(torch.load('quantized_model.pth', map_location=device))
 model.eval()  # 평가 모드로 전환
 
 # 이미지 전처리 (모델 학습 시와 동일한 전처리 적용)
