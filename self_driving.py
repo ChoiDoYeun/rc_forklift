@@ -80,7 +80,7 @@ model.eval()  # 평가 모드로 전환
 kit = ServoKit(channels=16)
 
 # 서보모터 초기 설정 (스티어링 휠과 카메라 서보모터)
-kit.servo[0].angle = 90  # 스티어링 휠 서보모터 중립 (채널 0)
+kit.servo[0].angle = 80  # 스티어링 휠 서보모터 중립 (채널 0)
 kit.servo[1].angle = 60  # 첫 번째 카메라 서보모터 초기 설정 (채널 1)
 kit.servo[2].angle = 80  # 두 번째 카메라 서보모터 초기 설정 (채널 2)
 
