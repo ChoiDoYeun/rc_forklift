@@ -45,7 +45,7 @@ motor2 = MotorController(16, 13, 26)  # 모터2: en(16), in1(13), in2(26)
 kit = ServoKit(channels=16)
 
 # 서보모터 초기 설정 (스티어링 휠, 채널 0 사용)
-kit.servo[0].angle = 90  # 스티어링 휠 서보모터 중립 (채널 0)
+kit.servo[0].angle = 85  # 스티어링 휠 서보모터 중립 (채널 0)
 
 # 카메라 조향용 서보모터 (채널 1과 채널 2 사용)
 kit.servo[1].angle = 60  # 첫 번째 카메라 서보모터 초기 설정 (채널 1)
@@ -100,8 +100,8 @@ def stop_saving():
     print("프레임 캡처 및 CSV 파일 저장 중단.")
 
 # 서보모터 각도 초기값 설정
-servo_angle = 90  # 스티어링 서보모터 중립
-speed = 60  # 모터 속도를 50으로 고정
+servo_angle = 85  # 스티어링 서보모터 중립
+speed = 40  # 모터 속도를 50으로 고정
 
 # 메인 루프
 running = True
@@ -136,8 +136,8 @@ while running:
 
     # 주행 중에도 계속 각도 및 속도 조정 가능
     axis_value = joystick.get_axis(0)  # 좌측 스틱 (스티어링 휠 서보모터 제어)
-    servo_angle = (1 - axis_value) * 35 + 55  # 각도를 55 ~ 125도 범위로 변환
-    servo_angle = max(55, min(125, servo_angle))  # 각도를 55 ~ 125도로 제한
+    servo_angle = (1 - axis_value) * 35 + 50  # 각도를 55 ~ 125도 범위로 변환
+    servo_angle = max(50, min(130, servo_angle))  # 각도를 55 ~ 125도로 제한
     kit.servo[0].angle = servo_angle  # 스티어링 서보모터 각도 설정
 
     # 우측 스틱 위아래 (속도 제어)
