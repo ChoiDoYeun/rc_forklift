@@ -25,7 +25,7 @@ class MotorController:
         self.pwm.ChangeDutyCycle(speed)
 
     def forward(self):
-        self.set_speed(60)  # 모터 속도를 항상 60으로 설정
+        self.set_speed(50)  # 모터 속도를 항상 60으로 설정
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
 
@@ -67,13 +67,13 @@ model.eval()  # 평가 모드로 전환
 kit = ServoKit(channels=16)
 
 # 서보모터 초기 설정 (스티어링 휠과 카메라 서보모터)
-kit.servo[0].angle = 85  # 스티어링 휠 서보모터 중립 (채널 0)
+kit.servo[0].angle = 82  # 스티어링 휠 서보모터 중립 (채널 0)
 kit.servo[1].angle = 60  # 첫 번째 카메라 서보모터 초기 설정 (채널 1)
 kit.servo[2].angle = 80  # 두 번째 카메라 서보모터 초기 설정 (채널 2)
 
 # 서보모터 각도 설정 (클래스별)
 class_angles = {
-    0: 82,   # 중립
+    0: 85,   # 중립
     1: 55,   # 우회전
     2: 125   # 좌회전
 }
@@ -84,6 +84,9 @@ transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
+
+# 전역 변수로 frame 선언
+frame = None
 
 # 실시간 예측 함수
 def predict_steering(image):
@@ -116,6 +119,7 @@ def capture_camera():
         if not ret:
             print("카메라에서 프레임을 읽을 수 없습니다.")
             break
+    cap.release()
 
 # 카메라 스레드 시작
 camera_thread = threading.Thread(target=capture_camera)
