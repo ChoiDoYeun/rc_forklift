@@ -1,74 +1,64 @@
 import os
 import time
-import torch
 import cv2
-from torchvision import transforms, models
-from PIL import Image
 import numpy as np
-import torch.nn as nn
-from torchvision.models import mobilenet_v3_small, MobileNet_V3_Small_Weights
 
-# 모델 정의
-class selfdrivingCNN(nn.Module):
-    def __init__(self):
-        super(selfdrivingCNN, self).__init__()
-        # MobileNetV3 백본 사용, 사전 학습된 가중치 로드
-        self.backbone = mobilenet_v3_small(weights=MobileNet_V3_Small_Weights.DEFAULT)
+# OpenCV DNN 모듈로 ONNX 모델 로드
+onnx_model_path = 'best_model_pruned.onnx'
+net = cv2.dnn.readNetFromONNX(onnx_model_path)
 
-        # 출력 클래스를 3개로 수정
-        num_ftrs = self.backbone.classifier[3].in_features
-        self.backbone.classifier[3] = nn.Linear(num_ftrs, 3)
+# 테스트할 이미지 폴더 경로 설정
+image_folder = 'data/drive_00001'
 
-    def forward(self, x):
-        return self.backbone(x)
+# 이미지 전처리 함수
+def preprocess_image(image_path, target_size=(64, 64)):
+    # 이미지 로드 (그레이스케일)
+    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if image is None:
+        print(f"Error loading image: {image_path}")
+        return None
+    # 이미지 리사이즈
+    resized_image = cv2.resize(image, target_size)
+    # 이미지 정규화 및 차원 변경 (OpenCV DNN은 입력 형식이 [N, C, H, W])
+    blob = cv2.dnn.blobFromImage(resized_image, scalefactor=1/255.0, size=target_size)
+    # 모델 학습 시 적용한 Normalize(mean=0.5, std=0.5)를 반영
+    blob = (blob - 0.5) / 0.5
+    return blob
 
-# 장치 설정 (CPU 사용)
-device = torch.device('cpu')
+# 추론 속도 계산 함수 (FPS 측정)
+def calculate_fps(net, image_folder, num_images=0):
+    # 이미지 파일 리스트 불러오기
+    image_files = [f for f in os.listdir(image_folder) if f.endswith('.png')]
+    
+    # 처리할 이미지 개수 설정 (전체 이미지 중 일부만 처리하고 싶을 경우)
+    if num_images > 0:
+        image_files = image_files[:num_images]
+    
+    total_images = len(image_files)
+    print(f"Total images to process: {total_images}")
 
-# 모델 로드
-model = selfdrivingCNN().to(device)
-model.load_state_dict(torch.load('best_model.pth', map_location=device))
-model.eval()  # 평가 모드로 전환
-
-# 이미지 전처리 (모델 학습 시와 동일한 전처리 적용)
-transform = transforms.Compose([
-    transforms.Resize((64, 64)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
-
-# 이미지 경로 (drive_00001 폴더 내 PNG 파일)
-image_folder = 'drive_00005'
-image_files = [f for f in os.listdir(image_folder) if f.endswith('.png')]
-
-# 추론 시간 측정 및 FPS 계산
-total_time = 0
-num_images = len(image_files)
-
-for image_file in image_files:
-    # 이미지 로드 및 전처리
-    image_path = os.path.join(image_folder, image_file)
-    image = cv2.imread(image_path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image = Image.fromarray(image)
-    image = transform(image).unsqueeze(0).to(device)  # 배치 차원 추가
-
-    # 추론 시간 측정 시작
+    # FPS 측정을 위한 시간 기록 시작
     start_time = time.time()
 
-    # 모델 예측
-    with torch.no_grad():
-        outputs = model(image)
+    for image_file in image_files:
+        image_path = os.path.join(image_folder, image_file)
+        
+        # 이미지 전처리
+        blob = preprocess_image(image_path)
+        if blob is None:
+            continue
+        
+        # 추론 수행
+        net.setInput(blob)
+        output = net.forward()
 
-    # 추론 시간 측정 종료
-    end_time = time.time()
-    inference_time = end_time - start_time
-    total_time += inference_time
+    # 총 소요 시간 계산
+    total_time = time.time() - start_time
+    
+    # FPS 계산
+    fps = total_images / total_time
+    print(f"Total time taken: {total_time:.4f} seconds")
+    print(f"FPS: {fps:.2f} frames per second")
 
-    print(f"이미지 {image_file} 추론 시간: {inference_time:.4f}초")
-
-# FPS 계산
-average_time_per_image = total_time / num_images
-fps = 1 / average_time_per_image
-
-print(f"평균 FPS: {fps:.2f}")
+# 이미지 폴더 내 이미지들을 추론하고 FPS 계산
+calculate_fps(net, image_folder)
