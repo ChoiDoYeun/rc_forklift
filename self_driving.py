@@ -1,10 +1,11 @@
+import threading
 import RPi.GPIO as GPIO
 from adafruit_servokit import ServoKit
 import torch
 import torch.nn as nn
 import cv2
 import numpy as np
-from torchvision import transforms,models
+from torchvision import transforms
 from PIL import Image
 from torchvision.models import mobilenet_v3_small, MobileNet_V3_Small_Weights
 
@@ -72,14 +73,14 @@ kit.servo[2].angle = 80  # 두 번째 카메라 서보모터 초기 설정 (채�
 
 # 서보모터 각도 설정 (클래스별)
 class_angles = {
-    0: 85,   # 중립
+    0: 82,   # 중립
     1: 55,   # 우회전
     2: 125   # 좌회전
 }
 
-# 이미지 전처리 (모델 학습 시와 동일한 전처리 적용)
+# 이미지 전처리 (64x64 이미지 크기로 변경)
 transform = transforms.Compose([
-    transforms.Resize((64, 64)),
+    transforms.Resize((64, 64)),  # 이미지 크기 조정
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
@@ -106,25 +107,31 @@ def set_servo_angle(predicted_class):
     kit.servo[0].angle = angle
     print(f"서보모터 각도 설정: {angle}도")
 
-# 카메라 초기화
-cap = cv2.VideoCapture(0)
+# 카메라 프레임 캡처 함수 (스레드에서 실행)
+def capture_camera():
+    global frame
+    cap = cv2.VideoCapture(0)
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            print("카메라에서 프레임을 읽을 수 없습니다.")
+            break
 
-# 실시간 예측 루프
+# 카메라 스레드 시작
+camera_thread = threading.Thread(target=capture_camera)
+camera_thread.start()
+
+# 실시간 예측 루프 (모터 제어)
 try:
     # 모터 주행 시작 (모터 속도는 항상 60으로 유지)
     motor1.forward()
     motor2.forward()
 
     while True:
-        # 카메라에서 프레임 캡처
-        ret, frame = cap.read()
-        if not ret:
-            print("카메라에서 프레임을 읽을 수 없습니다.")
-            break
-
-        # 예측된 클래스에 따라 서보모터 각도 조정
-        predicted_class = predict_steering(frame)
-        set_servo_angle(predicted_class)
+        if frame is not None:
+            # 예측된 클래스에 따라 서보모터 각도 조정
+            predicted_class = predict_steering(frame)
+            set_servo_angle(predicted_class)
 
         # ESC 키를 누르면 종료
         if cv2.waitKey(1) & 0xFF == 27:
@@ -132,7 +139,6 @@ try:
 
 finally:
     # 카메라 및 GPIO 정리
-    cap.release()
     motor1.stop()
     motor2.stop()
     GPIO.cleanup()
