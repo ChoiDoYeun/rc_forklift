@@ -32,6 +32,7 @@ model.eval()  # 평가 모드로 전환
 
 # 이미지 전처리 (모델 학습 시와 동일한 전처리 적용)
 transform = transforms.Compose([
+    transforms.Resize((128, 128)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
