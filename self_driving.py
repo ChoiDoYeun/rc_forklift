@@ -1,11 +1,8 @@
 import threading
 import RPi.GPIO as GPIO
 from adafruit_servokit import ServoKit
-import torch
-import torch.nn as nn
 import cv2
 import numpy as np
-from torchvision.models import mobilenet_v3_small, MobileNet_V3_Small_Weights
 
 # 모터 제어 클래스
 class MotorController:
@@ -23,7 +20,7 @@ class MotorController:
         self.pwm.ChangeDutyCycle(speed)
 
     def forward(self):
-        self.set_speed(50)  # 모터 속도를 항상 50으로 설정
+        self.set_speed(40)  # 모터 속도를 항상 50으로 설정
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
 
@@ -35,35 +32,21 @@ class MotorController:
     def cleanup(self):
         self.pwm.stop()
 
+# GPIO 초기화
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
 # 모터 초기화
 motor1 = MotorController(18, 17, 27)  # 모터1: en(18), in1(17), in2(27)
 motor2 = MotorController(16, 13, 26)  # 모터2: en(16), in1(13), in2(26)
 
-# 모델 정의
-class selfdrivingCNN(nn.Module):
-    def __init__(self):
-        super(selfdrivingCNN, self).__init__()
-        # MobileNetV3 백본 사용, 사전 학습된 가중치 로드
-        self.backbone = mobilenet_v3_small(weights=MobileNet_V3_Small_Weights.DEFAULT)
+# OpenCV DNN 모듈로 ONNX 모델 로드
+onnx_model_path = 'best_model_pruned.onnx'
+net = cv2.dnn.readNetFromONNX(onnx_model_path)
 
-        # 출력 클래스를 3개로 수정
-        num_ftrs = self.backbone.classifier[3].in_features
-        self.backbone.classifier[3] = nn.Linear(num_ftrs, 3)
-
-    def forward(self, x):
-        return self.backbone(x)
-
-# 장치 설정 (CPU 사용)
-device = torch.device('cpu')
-
-# 모델 로드
-model = selfdrivingCNN().to(device)
-model.load_state_dict(torch.load('best_model.pth', map_location=device))
-model.eval()  # 평가 모드로 전환
-
-# 모델 양자화 적용
-from torch.quantization import quantize_dynamic
-model = quantize_dynamic(model, {nn.Linear, nn.Conv2d}, dtype=torch.qint8)
+# OpenCV DNN 백엔드 및 타겟 설정 (라즈베리 파이에서는 CPU 사용)
+net.setPreferableBackend(cv2.dnn.DNN_BACKEND_DEFAULT)
+net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
 # 서보모터 설정
 kit = ServoKit(channels=16)
@@ -76,8 +59,8 @@ kit.servo[2].angle = 80  # 두 번째 카메라 서보모터 초기 설정 (채�
 # 서보모터 각도 설정 (클래스별)
 class_angles = {
     0: 85,   # 중립
-    1: 55,   # 우회전
-    2: 125   # 좌회전
+    1: 50,   # 우회전
+    2: 130   # 좌회전
 }
 
 # 전역 변수로 frame 선언
@@ -85,38 +68,39 @@ frame = None
 
 # 이미지 전처리 함수 (OpenCV 사용)
 def preprocess_image(image):
-    image = cv2.resize(image, (64, 64))  # 이미지 크기 조정
-    image = image.astype(np.float32) / 255.0  # [0,1] 범위로 정규화
-    # 데이터 타입을 np.float32로 지정
-    mean = np.array([0.485, 0.456, 0.406], dtype=np.float32).reshape(1,1,3)
-    std = np.array([0.229, 0.224, 0.225], dtype=np.float32).reshape(1,1,3)
-    image = (image - mean) / std  # 정규화
-    image = np.transpose(image, (2, 0, 1))  # 채널 순서 변경 (HWC -> CHW)
-    image = np.expand_dims(image, axis=0)  # 배치 차원 추가
-    image = torch.from_numpy(image).to(device)
-    return image
+    # 이미지 크기 조정
+    resized_image = cv2.resize(image, (64, 64))
+    # 그레이스케일 변환
+    gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
+    # blob 생성
+    blob = cv2.dnn.blobFromImage(gray_image, scalefactor=1/255.0, size=(64, 64))
+    # Normalize(mean=0.5, std=0.5) 적용
+    blob = (blob - 0.5) / 0.5
+    return blob
 
 # 실시간 예측 함수
 def predict_steering(image):
     # 이미지 전처리
-    input_tensor = preprocess_image(image)
-
+    blob = preprocess_image(image)
     # 모델 예측
-    with torch.no_grad():
-        outputs = model(input_tensor)
-        _, predicted_class = torch.max(outputs, 1)
-
-    return predicted_class.item()
+    net.setInput(blob)
+    output = net.forward()
+    # 결과 해석
+    probs = output[0]
+    predicted_class = np.argmax(probs)
+    return predicted_class
 
 # 서보모터 각도 제어 함수
 def set_servo_angle(predicted_class):
-    angle = class_angles[predicted_class]
+    angle = class_angles.get(predicted_class, 85)  # 기본값은 중립(85도)
     kit.servo[0].angle = angle
 
 # 카메라 프레임 캡처 함수 (스레드에서 실행)
 def capture_camera():
     global frame
     cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)   # 해상도 설정
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -140,7 +124,7 @@ try:
             predicted_class = predict_steering(frame)
             set_servo_angle(predicted_class)
 
-        # ESC 키를 누르면 종료
+        # ESC 키를 누르면 종료 (라즈베리 파이에서는 필요 없을 수 있음)
         if cv2.waitKey(1) & 0xFF == 27:
             break
 
