@@ -36,8 +36,8 @@ def control_servo(key, servo1_angle, servo2_angle):
     servo2_angle = max(0, min(180, servo2_angle))
 
     # 서보모터 각도 적용
-    kit.servo[0].angle = servo1_angle
-    kit.servo[1].angle = servo2_angle
+    kit.servo[1].angle = servo1_angle
+    kit.servo[2].angle = servo2_angle
 
     # 서보모터 각도를 출력
     print(f"Servo1 (좌우): {servo1_angle}도, Servo2 (상하): {servo2_angle}도")
