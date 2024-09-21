@@ -119,7 +119,7 @@ try:
         set_servo_angle(predicted_class)
 
         # 프레임 당 지연 시간 조정 (선택 사항)
-        time.sleep(0.02)
+        time.sleep(0.005)
 
         # ESC 키를 누르면 종료
         if cv2.waitKey(1) & 0xFF == 27:
