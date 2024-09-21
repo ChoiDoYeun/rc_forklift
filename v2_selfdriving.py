@@ -84,7 +84,7 @@ class selfdrivingCNN(nn.Module):
 
 # 모델 로드
 model = selfdrivingCNN().to(device)
-model.load_state_dict(torch.load('pruned_0921_newtrack.pth', map_location=device))
+model.load_state_dict(torch.load('0921_newtrack.pth', map_location=device))
 model.eval()
 
 # 서보모터 설정
