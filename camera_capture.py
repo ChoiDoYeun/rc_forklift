@@ -47,8 +47,6 @@ while True:
     if key == ord(' '):
         img_counter = save_image(frame_resized, img_counter)
 
-    # 서보모터 제어 및 각도 출력
-    servo1_angle, servo2_angle = control_servo(key, servo1_angle, servo2_angle)
 
 # 종료 처리
 cap.release()
