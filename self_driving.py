@@ -41,7 +41,7 @@ motor1 = MotorController(18, 17, 27)  # 모터1: en(18), in1(17), in2(27)
 motor2 = MotorController(16, 13, 26)  # 모터2: en(16), in1(13), in2(26)
 
 # OpenCV DNN 모듈로 ONNX 모델 로드
-onnx_model_path = '0921_newtrack.onnx'
+onnx_model_path = 'pruned_0921_newtrack.onnx'
 net = cv2.dnn.readNetFromONNX(onnx_model_path)
 
 # OpenCV DNN 백엔드 및 타겟 설정 (라즈베리 파이에서는 CPU 사용)
