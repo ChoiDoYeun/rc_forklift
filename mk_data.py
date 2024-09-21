@@ -163,7 +163,7 @@ while running:
         frame_count += 1
         print(f"프레임 {frame_filename} 저장 완료")
 
-    time.sleep(0.1)  # 0.1초마다 상태 기록
+    time.sleep(0.0167)  # 0.0167초마다 상태 기록 -> 60fps
 
 # Pygame 종료
 pygame.quit()
