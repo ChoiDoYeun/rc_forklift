@@ -80,17 +80,18 @@ def compare_pruned_and_unpruned_models(model_name, unpruned_model_path, pruned_m
 
 # 각 모델의 프루닝 전후 경로 설정
 unpruned_model_paths = {
-    'resnet18': 'best_resnet18_model.pth',
-    'resnet50': 'best_resnet50_model.pth',
     'mobilenet_v2': 'best_mobilenet_v2_model.pth',
-    'mobilenet_v3_small': 'best_mobilenet_v3_small_model.pth'
+    'mobilenet_v3_small': 'best_mobilenet_v3_small_model.pth',
+    'resnet18': 'best_resnet18_model.pth',
+    'resnet50': 'best_resnet50_model.pth'
 }
 
 pruned_model_paths = {
-    'resnet18': 'pruned_resnet18_model.pth',
-    'resnet50': 'pruned_resnet50_model.pth',
     'mobilenet_v2': 'pruned_mobilenet_v2_model.pth',
-    'mobilenet_v3_small': 'pruned_mobilenet_v3_small_model.pth'
+    'mobilenet_v3_small': 'pruned_mobilenet_v3_small_model.pth',
+    'resnet18': 'pruned_resnet18_model.pth',
+    'resnet50': 'pruned_resnet50_model.pth'
+
 }
 
 # 모델 리스트에서 각각 프루닝 전후 성능을 비교
