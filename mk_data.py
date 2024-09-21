@@ -49,7 +49,7 @@ kit.servo[0].angle = 85  # 스티어링 휠 서보모터 중립 (채널 0)
 
 # 카메라 조향용 서보모터 (채널 1과 채널 2 사용)
 kit.servo[1].angle = 90  # 첫 번째 카메라 서보모터 초기 설정 (채널 1)
-kit.servo[2].angle = 120  # 두 번째 카메라 서보모터 초기 설정 (채널 2)
+kit.servo[2].angle = 110  # 두 번째 카메라 서보모터 초기 설정 (채널 2)
 
 # Pygame 초기화
 pygame.init()
@@ -101,7 +101,7 @@ def stop_saving():
 
 # 서보모터 각도 초기값 설정
 servo_angle = 85  # 스티어링 서보모터 중립
-speed = 30  # 모터 속도를 50으로 고정
+speed = 40  # 모터 속도를 50으로 고정
 
 # 메인 루프
 running = True
