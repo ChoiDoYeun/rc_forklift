@@ -55,7 +55,7 @@ motor1.forward(speed=40)
 motor2.forward(speed=40)
 
 # predicted_servo_angle.csv 파일에서 각 프레임당 servo_angle 값을 불러오기
-predicted_servo_angle_path = 'predicted_servo_angle.csv'  # 예측 CSV 파일 경로
+predicted_servo_angle_path = 'v2_predicted_servo_angle.csv'  # 예측 CSV 파일 경로
 
 with open(predicted_servo_angle_path, 'r') as file:
     reader = csv.reader(file)
@@ -69,7 +69,7 @@ with open(predicted_servo_angle_path, 'r') as file:
         frame_count += 1
         
         # 101프레임이 끝나면 루프 종료
-        if frame_count >= 101:
+        if frame_count >= 118:
             break
 
 # 모터 정지
