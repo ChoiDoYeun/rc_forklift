@@ -7,7 +7,8 @@ kit = ServoKit(channels=16)
 
 # 서보모터 초기 설정 (스티어링 휠과 카메라용 서보모터)
 kit.servo[0].angle = 85  # 서보모터 1 초기 각도
-kit.servo[1].angle = 155  # 서보모터 2 초기 각도
+kit.servo[1].angle = 85  # 서보모터 2 초기 각도
+kit.servo[2].angle = 155  # 서보모터 2 초기 각도
 
 # 카메라 초기화 (OpenCV 사용)
 cap = cv2.VideoCapture(0)  # 카메라 장치 선택
