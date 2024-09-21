@@ -136,8 +136,8 @@ while running:
 
     # 주행 중에도 계속 각도 및 속도 조정 가능
     axis_value = joystick.get_axis(0)  # 좌측 스틱 (스티어링 휠 서보모터 제어)
-    servo_angle = (1 - axis_value) * 35 + 50  # 각도를 55 ~ 125도 범위로 변환
-    servo_angle = max(50, min(120, servo_angle))  # 각도를 55 ~ 125도로 제한
+    servo_angle = (1 - axis_value) * 35   # 각도를 55 ~ 125도 범위로 변환
+    servo_angle = max(0, min(180, servo_angle))  # 각도를 55 ~ 125도로 제한
     kit.servo[0].angle = servo_angle  # 스티어링 서보모터 각도 설정
 
     # 우측 스틱 위아래 (속도 제어)
