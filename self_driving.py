@@ -62,6 +62,10 @@ class_angles = {
     1: 130,  # 좌회전
     2: 50    # 우회전
 }
+# 서보모터 각도 제어 함수
+def set_servo_angle(predicted_class):
+    angle = class_angles.get(predicted_class, 85)  # 기본값은 중립(85도)
+    kit.servo[0].angle = angle
 
 # 이미지 전처리 함수 (OpenCV 사용)
 def preprocess_image(image):
