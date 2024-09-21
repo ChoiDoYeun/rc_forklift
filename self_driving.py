@@ -95,7 +95,7 @@ def predict_steering(image):
     probs = output.flatten()
     predicted_class = np.argmax(probs)
     # 예측 결과 출력 (디버깅용)
-    print(f"Predicted class: {predicted_class}, Probabilities: {probs}")
+    print(f"Predicted class: {predicted_class}")
     return predicted_class
 
 # 모터 주행 시작
@@ -119,7 +119,7 @@ try:
         set_servo_angle(predicted_class)
 
         # 프레임 당 지연 시간 조정 (선택 사항)
-        # time.sleep(0.01)
+        time.sleep(0.02)
 
         # ESC 키를 누르면 종료
         if cv2.waitKey(1) & 0xFF == 27:
