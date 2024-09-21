@@ -4,25 +4,26 @@ import cv2
 import numpy as np
 
 # OpenCV DNN 모듈로 ONNX 모델 로드
-onnx_model_path = 'mobile_v3small_best_model.onnx'
+onnx_model_path = '0921_newtrack.onnx'
 net = cv2.dnn.readNetFromONNX(onnx_model_path)
 
 # 테스트할 이미지 폴더 경로 설정
 image_folder = 'drive_00001'
 
-# 이미지 전처리 함수
-def preprocess_image(image_path, target_size=(64, 64)):
-    # 이미지 로드 (그레이스케일)
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    if image is None:
-        print(f"Error loading image: {image_path}")
-        return None
-    # 이미지 리사이즈
-    resized_image = cv2.resize(image, target_size)
-    # 이미지 정규화 및 차원 변경 (OpenCV DNN은 입력 형식이 [N, C, H, W])
-    blob = cv2.dnn.blobFromImage(resized_image, scalefactor=1/255.0, size=target_size)
-    # 모델 학습 시 적용한 Normalize(mean=0.5, std=0.5)를 반영
-    blob = (blob - 0.5) / 0.5
+# 이미지 전처리 함수 (OpenCV 사용)
+def preprocess_image(image):
+    # 이미지 크기 조정
+    resized_image = cv2.resize(image, (64, 64))
+    # 그레이스케일 변환
+    gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
+    # 채널 차원 추가 (C, H, W 형태로 만들기 위해)
+    gray_image = gray_image[np.newaxis, :, :]
+    # 이미지 정규화: 0 ~ 255 범위를 0 ~ 1 범위로 변환
+    gray_image = gray_image / 255.0
+    # Normalize(mean=0.5, std=0.5) 적용
+    gray_image = (gray_image - 0.5) / 0.5
+    # 배치 차원 추가 (N, C, H, W 형태로 만들기 위해)
+    blob = np.expand_dims(gray_image, axis=0).astype(np.float32)
     return blob
 
 # 추론 속도 계산 함수 (FPS 측정)
