@@ -68,7 +68,7 @@ frame = None
 # 이미지 전처리 함수 (OpenCV 사용)
 def preprocess_image(image):
     # 이미지 크기 조정
-    resized_image = cv2.resize(image, (64, 64))
+    resized_image = cv2.resize(image, (224, 224))
     # BGR -> RGB 변환 (MobileNet은 RGB를 기대)
     rgb_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB)
     # blob 생성 (scalefactor=1/255.0, mean=(0.485, 0.456, 0.406), swapRB=True 설정)
