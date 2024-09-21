@@ -20,7 +20,7 @@ class MotorController:
         self.pwm.ChangeDutyCycle(speed)
 
     def forward(self):
-        self.set_speed(40)  # 모터 속도를 항상 50으로 설정
+        self.set_speed(40)  # 모터 속도를 항상 40으로 설정
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
 
@@ -41,7 +41,7 @@ motor1 = MotorController(18, 17, 27)  # 모터1: en(18), in1(17), in2(27)
 motor2 = MotorController(16, 13, 26)  # 모터2: en(16), in1(13), in2(26)
 
 # OpenCV DNN 모듈로 ONNX 모델 로드
-onnx_model_path = 'best_model_pruned.onnx'
+onnx_model_path = '0921_newtrack.onnx'
 net = cv2.dnn.readNetFromONNX(onnx_model_path)
 
 # OpenCV DNN 백엔드 및 타겟 설정 (라즈베리 파이에서는 CPU 사용)
@@ -53,13 +53,14 @@ kit = ServoKit(channels=16)
 
 # 서보모터 초기 설정
 kit.servo[0].angle = 85  # 스티어링 휠 서보모터 중립 (채널 0)
-kit.servo[1].angle = 60  # 첫 번째 카메라 서보모터 초기 설정 (채널 1)
-kit.servo[2].angle = 80  # 두 번째 카메라 서보모터 초기 설정 (채널 2)
+kit.servo[1].angle = 90  # 첫 번째 카메라 서보모터 초기 설정 (채널 1)
+kit.servo[2].angle = 110  # 두 번째 카메라 서보모터 초기 설정 (채널 2)
 
 # 서보모터 각도 설정 (클래스별)
 class_angles = {
     0: 85,   # 중립
-    1: 130,   # 우회전
+    1: 130,   # 좌회전
+    2: 50   # 우회전
 }
 
 # 전역 변수로 frame 선언
@@ -71,10 +72,14 @@ def preprocess_image(image):
     resized_image = cv2.resize(image, (64, 64))
     # 그레이스케일 변환
     gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
-    # blob 생성
-    blob = cv2.dnn.blobFromImage(gray_image, scalefactor=1/255.0, size=(64, 64))
+    # 채널 차원 추가 (C, H, W 형태로 만들기 위해)
+    gray_image = gray_image[np.newaxis, :, :]
+    # 이미지 정규화: 0 ~ 255 범위를 0 ~ 1 범위로 변환
+    gray_image = gray_image / 255.0
     # Normalize(mean=0.5, std=0.5) 적용
-    blob = (blob - 0.5) / 0.5
+    gray_image = (gray_image - 0.5) / 0.5
+    # 배치 차원 추가 (N, C, H, W 형태로 만들기 위해)
+    blob = np.expand_dims(gray_image, axis=0).astype(np.float32)
     return blob
 
 # 실시간 예측 함수
