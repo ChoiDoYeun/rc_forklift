@@ -62,25 +62,26 @@ class_angles = {
     1: 130,  # 좌회전
     2: 50    # 우회전
 }
+
 # 서보모터 각도 제어 함수
 def set_servo_angle(predicted_class):
     angle = class_angles.get(predicted_class, 85)  # 기본값은 중립(85도)
     kit.servo[0].angle = angle
 
-# 이미지 전처리 함수 (OpenCV 사용)
+# 이미지 전처리 함수 수정
 def preprocess_image(image):
-    # 이미지 크기 조정 (카메라 해상도에 맞게 수정)
+    # 이미지 크기 조정
     resized_image = cv2.resize(image, (64, 64))
     # 그레이스케일 변환
     gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
     # 이미지 정규화: 0 ~ 255 범위를 0 ~ 1 범위로 변환
-    gray_image = gray_image / 255.0
-    # Normalize(mean=0.5, std=0.5) 적용
+    gray_image = gray_image.astype(np.float32) / 255.0
+    # Normalize(mean=[0.5], std=[0.5]) 적용
     gray_image = (gray_image - 0.5) / 0.5
     # 채널 차원 추가 (C, H, W 형태)
     gray_image = np.expand_dims(gray_image, axis=0)
     # 배치 차원 추가 (N, C, H, W 형태)
-    blob = np.expand_dims(gray_image, axis=0).astype(np.float32)
+    blob = np.expand_dims(gray_image, axis=0)
     return blob
 
 # 실시간 예측 함수
@@ -93,6 +94,8 @@ def predict_steering(image):
     # 결과 해석
     probs = output.flatten()
     predicted_class = np.argmax(probs)
+    # 예측 결과 출력 (디버깅용)
+    print(f"Predicted class: {predicted_class}, Probabilities: {probs}")
     return predicted_class
 
 # 모터 주행 시작
