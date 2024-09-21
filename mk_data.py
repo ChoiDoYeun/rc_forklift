@@ -1,9 +1,8 @@
 import RPi.GPIO as GPIO
 import pygame
 import time
-import cv2  # OpenCV 사용
 import csv
-import os  # 폴더 생성에 사용
+import os  # 추가된 부분
 from adafruit_servokit import ServoKit
 
 # GPIO 설정
@@ -61,47 +60,66 @@ pygame.joystick.init()
 joystick = pygame.joystick.Joystick(0)
 joystick.init()
 
-# 카메라 초기화 (OpenCV 사용)
-cap = cv2.VideoCapture(0)  # 카메라 장치 선택
-
-# 주행 폴더 생성
-def create_drive_folder():
-    drive_number = 1
-    while True:
-        folder_name = f'drive_{drive_number:05d}'
-        if not os.path.exists(folder_name):
-            os.makedirs(folder_name)
-            return folder_name
-        drive_number += 1
-
 # CSV 파일 작성 및 저장을 관리하는 변수
 saving_data = False
-drive_folder = None
 csv_writer = None
 csv_file = None
-frame_count = 0
+frame_count = 0  # 프레임 번호
+drive_number = 0  # 드라이브 번호
 
-# 주행 및 저장 제어 함수
+# 드라이브 디렉토리 및 파일 경로를 관리하는 변수
+drive_dir = ''
+csv_file_path = ''
+
+# CSV 파일 열기 및 저장 제어 함수
 def start_saving():
-    global drive_folder, csv_writer, csv_file, frame_count
-    drive_folder = create_drive_folder()
-    csv_file_path = os.path.join(drive_folder, 'drive_data.csv')
+    global csv_writer, csv_file, frame_count, drive_number, drive_dir, csv_file_path
+
+    # 'data' 디렉토리가 존재하지 않으면 생성
+    data_dir = 'data'
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+
+    # 기존 드라이브 디렉토리 목록 가져오기
+    existing_drives = [d for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d)) and d.startswith('drive_')]
+
+    # 드라이브 번호 추출 및 다음 번호 결정
+    drive_numbers = []
+    for d in existing_drives:
+        try:
+            num = int(d.split('_')[1])
+            drive_numbers.append(num)
+        except (IndexError, ValueError):
+            continue
+
+    if drive_numbers:
+        drive_number = max(drive_numbers) + 1
+    else:
+        drive_number = 1
+
+    # 드라이브 디렉토리 이름 생성 (예: drive_001)
+    drive_dir = os.path.join(data_dir, f'drive_{drive_number:03d}')
+    os.makedirs(drive_dir)
+
+    # CSV 파일 경로 설정
+    csv_file_path = os.path.join(drive_dir, 'drive_data.csv')
+
+    # CSV 파일 열기 및 헤더 작성
     csv_file = open(csv_file_path, 'w', newline='')
     csv_writer = csv.writer(csv_file)
-    csv_writer.writerow(['frame', 'servo_angle', 'motor_speed'])  # CSV 헤더 작성
-    frame_count = 0
-    print("프레임 캡처 및 CSV 파일 저장 시작.")
+    csv_writer.writerow(['frame', 'servo_angle'])  # CSV 헤더 작성
+    frame_count = 0  # 프레임 번호 초기화
+    print(f"데이터 저장 시작: {csv_file_path}")
 
 def stop_saving():
     global csv_file
     if csv_file:
         csv_file.close()
         csv_file = None
-    print("프레임 캡처 및 CSV 파일 저장 중단.")
+        print("데이터 저장 중단.")
 
 # 서보모터 각도 초기값 설정
 servo_angle = 85  # 스티어링 서보모터 중립
-speed = 40  # 모터 속도를 50으로 고정
 
 # 메인 루프
 running = True
@@ -115,8 +133,9 @@ while running:
 
             # 버튼 0을 눌러 저장 중단
             if event.button == 0:  # 버튼 0: 저장 중단
-                saving_data = False
-                stop_saving()
+                if saving_data:
+                    saving_data = False
+                    stop_saving()
 
             # 버튼 3을 눌러 저장 시작
             if event.button == 3:  # 버튼 3: 저장 시작
@@ -128,48 +147,24 @@ while running:
         elif event.type == pygame.QUIT:
             running = False
 
-    # 카메라에서 프레임 캡처
-    ret, frame = cap.read()
-    if not ret:
-        print("카메라에서 프레임을 읽을 수 없습니다.")
-        break
-
-    # 주행 중에도 계속 각도 및 속도 조정 가능
+    # 주행 중에도 계속 각도 조정 가능
     axis_value = joystick.get_axis(0)  # 좌측 스틱 (스티어링 휠 서보모터 제어)
     servo_angle = (1 - axis_value) * 90  # 각도를 0 ~ 180도 범위로 변환
     servo_angle = max(0, min(180, servo_angle))  # 각도를 0 ~ 180도로 제한
     kit.servo[0].angle = servo_angle  # 스티어링 서보모터 각도 설정
 
-    # 우측 스틱 위아래 (속도 제어)
-    axis_value = joystick.get_axis(3)  # 축 3: 우측 스틱 위아래
-    if axis_value < -0.1:  # 스틱을 위로 올리면
-        motor1.forward(speed)  # 속도 70으로 설정
-        motor2.forward(speed)
-
-    # 프레임 캡처 및 CSV 저장 (버튼 3을 눌렀을 때만)
-    if saving_data:
-        # 프레임 크기 조정 (256x256)
-        frame_resized = cv2.resize(frame, (64, 64))
-
-        # 프레임 저장
-        frame_filename = f'frame_{frame_count:05d}.png'
-        frame_path = os.path.join(drive_folder, frame_filename)
-        cv2.imwrite(frame_path, frame_resized)
-
-        # CSV 파일에 데이터 저장
-        csv_writer.writerow([frame_filename, servo_angle, speed])
-
-       
+    # 데이터 저장 (버튼 3을 눌렀을 때만)
+    if saving_data and csv_writer:
+        csv_writer.writerow([frame_count, servo_angle])  # 프레임 번호와 서보 각도 저장
+        print(f"프레임 {frame_count}, 서보 각도 {servo_angle} 저장 완료")
         frame_count += 1
-        print(f"프레임 {frame_filename} 저장 완료")
 
-    time.sleep(0.0167)  # 0.0167초마다 상태 기록 -> 60fps
+    time.sleep(0.0167)  # 0.0167초마다 상태 기록
 
 # Pygame 종료
 pygame.quit()
 
-# 카메라와 CSV 파일 정리
-cap.release()
+# CSV 파일 정리
 if csv_file:
     csv_file.close()
 
