@@ -7,6 +7,7 @@ import torch.nn as nn
 from torchvision import transforms
 from PIL import Image
 import time
+from torchvision.models import mobilenet_v3_small, MobileNet_V3_Small_Weights
 
 # 장치 설정 (GPU 또는 CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
