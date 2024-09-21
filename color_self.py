@@ -72,7 +72,7 @@ def preprocess_image(image):
     # BGR -> RGB 변환 (MobileNet은 RGB를 기대)
     rgb_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB)
     # blob 생성 (scalefactor=1/255.0, mean=(0.485, 0.456, 0.406), swapRB=True 설정)
-    blob = cv2.dnn.blobFromImage(rgb_image, scalefactor=1/255.0, size=(64, 64), mean=(0.485, 0.456, 0.406), swapRB=True)
+    blob = cv2.dnn.blobFromImage(rgb_image, scalefactor=1/255.0, size=(224, 224), mean=(0.485, 0.456, 0.406), swapRB=True)
     return blob
 
 # 실시간 예측 함수
