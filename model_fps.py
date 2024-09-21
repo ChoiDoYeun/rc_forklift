@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 # OpenCV DNN 모듈로 ONNX 모델 로드
-onnx_model_path = 'best_model_pruned.onnx'
+onnx_model_path = 'mobile_v3small_best_model.onnx'
 net = cv2.dnn.readNetFromONNX(onnx_model_path)
 
 # 테스트할 이미지 폴더 경로 설정
