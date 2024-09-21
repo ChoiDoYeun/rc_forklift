@@ -1,8 +1,8 @@
-import threading
 import RPi.GPIO as GPIO
 from adafruit_servokit import ServoKit
 import cv2
 import numpy as np
+import time
 
 # 모터 제어 클래스
 class MotorController:
@@ -44,7 +44,7 @@ motor2 = MotorController(16, 13, 26)  # 모터2: en(16), in1(13), in2(26)
 onnx_model_path = '0921_newtrack.onnx'
 net = cv2.dnn.readNetFromONNX(onnx_model_path)
 
-# OpenCV DNN 백엔드 및 타겟 설정 (라즈베리 파이에서는 CPU 사용)
+# OpenCV DNN 백엔드 및 타겟 설정
 net.setPreferableBackend(cv2.dnn.DNN_BACKEND_DEFAULT)
 net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU)
 
@@ -59,26 +59,23 @@ kit.servo[2].angle = 110  # 두 번째 카메라 서보모터 초기 설정 (채
 # 서보모터 각도 설정 (클래스별)
 class_angles = {
     0: 85,   # 중립
-    1: 130,   # 좌회전
-    2: 50   # 우회전
+    1: 130,  # 좌회전
+    2: 50    # 우회전
 }
-
-# 전역 변수로 frame 선언
-frame = None
 
 # 이미지 전처리 함수 (OpenCV 사용)
 def preprocess_image(image):
-    # 이미지 크기 조정
+    # 이미지 크기 조정 (카메라 해상도에 맞게 수정)
     resized_image = cv2.resize(image, (64, 64))
     # 그레이스케일 변환
     gray_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2GRAY)
-    # 채널 차원 추가 (C, H, W 형태로 만들기 위해)
-    gray_image = gray_image[np.newaxis, :, :]
     # 이미지 정규화: 0 ~ 255 범위를 0 ~ 1 범위로 변환
     gray_image = gray_image / 255.0
     # Normalize(mean=0.5, std=0.5) 적용
     gray_image = (gray_image - 0.5) / 0.5
-    # 배치 차원 추가 (N, C, H, W 형태로 만들기 위해)
+    # 채널 차원 추가 (C, H, W 형태)
+    gray_image = np.expand_dims(gray_image, axis=0)
+    # 배치 차원 추가 (N, C, H, W 형태)
     blob = np.expand_dims(gray_image, axis=0).astype(np.float32)
     return blob
 
@@ -90,50 +87,43 @@ def predict_steering(image):
     net.setInput(blob)
     output = net.forward()
     # 결과 해석
-    probs = output[0]
+    probs = output.flatten()
     predicted_class = np.argmax(probs)
     return predicted_class
 
-# 서보모터 각도 제어 함수
-def set_servo_angle(predicted_class):
-    angle = class_angles.get(predicted_class, 85)  # 기본값은 중립(85도)
-    kit.servo[0].angle = angle
+# 모터 주행 시작
+motor1.forward()
+motor2.forward()
 
-# 카메라 프레임 캡처 함수 (스레드에서 실행)
-def capture_camera():
-    global frame
+try:
+    # 카메라 캡처 초기화
     cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)   # 해상도 설정
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 64)  # 해상도 낮추기
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 64)
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             print("카메라에서 프레임을 읽을 수 없습니다.")
             break
-    cap.release()
 
-# 카메라 스레드 시작
-camera_thread = threading.Thread(target=capture_camera)
-camera_thread.start()
+        # 예측된 클래스에 따라 서보모터 각도 조정
+        predicted_class = predict_steering(frame)
+        set_servo_angle(predicted_class)
 
-# 실시간 예측 루프 (모터 제어)
-try:
-    # 모터 주행 시작
-    motor1.forward()
-    motor2.forward()
+        # 프레임 당 지연 시간 조정 (선택 사항)
+        # time.sleep(0.01)
 
-    while True:
-        if frame is not None:
-            # 예측된 클래스에 따라 서보모터 각도 조정
-            predicted_class = predict_steering(frame)
-            set_servo_angle(predicted_class)
-
-        # ESC 키를 누르면 종료 (라즈베리 파이에서는 필요 없을 수 있음)
+        # ESC 키를 누르면 종료
         if cv2.waitKey(1) & 0xFF == 27:
             break
 
+except KeyboardInterrupt:
+    pass
+
 finally:
-    # 카메라 및 GPIO 정리
+    # 리소스 해제
+    cap.release()
     motor1.stop()
     motor2.stop()
     GPIO.cleanup()
