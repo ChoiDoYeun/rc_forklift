@@ -11,7 +11,7 @@ net = cv2.dnn.readNetFromONNX(onnx_model_path)
 image_folder = 'drive_00001'
 
 # 이미지 전처리 함수
-def preprocess_image(image_path, target_size=(128, 128)):
+def preprocess_image(image_path, target_size=(64, 64)):
     # 이미지 로드 (그레이스케일)
     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
     if image is None:
