@@ -149,7 +149,7 @@ while running:
     # 프레임 캡처 및 CSV 저장 (버튼 3을 눌렀을 때만)
     if saving_data:
         # 프레임 크기 조정 (256x256)
-        frame_resized = cv2.resize(frame, (256, 256))
+        frame_resized = cv2.resize(frame, (64, 64))
 
         # 프레임 저장
         frame_filename = f'frame_{frame_count:05d}.png'
