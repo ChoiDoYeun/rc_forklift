@@ -22,7 +22,7 @@ def preprocess_image(image_path, target_size=(224, 224)):
     # 이미지 리사이즈
     resized_image = cv2.resize(image, target_size)
     # OpenCV DNN의 입력 형식에 맞게 blob 생성 (입력 형식: [N, C, H, W])
-    blob = cv2.dnn.blobFromImage(resized_image, scalefactor=1/255.0, size=target_size, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), swapRB=True)
+    blob = cv2.dnn.blobFromImage(resized_image, scalefactor=1/255.0, size=target_size, mean=(0.485, 0.456, 0.406), swapRB=True)
     return blob
 
 # 추론 속도 계산 함수 (FPS 측정)
