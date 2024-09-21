@@ -67,12 +67,8 @@ with open(predicted_servo_angle_path, 'r') as file:
         print(f"Frame {frame_count}: Servo Angle Set to {servo_angle}")
         time.sleep(0.1)  # 0.1초 대기 (프레임당 0.1초)
         frame_count += 1
-        
-        # 101프레임이 끝나면 루프 종료
-        if frame_count >= 118:
-            break
 
-# 모터 정지
+# CSV 파일 끝까지 읽은 후 모터 정지
 motor1.stop()
 motor2.stop()
 
