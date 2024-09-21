@@ -109,7 +109,7 @@ def set_servo_angle(predicted_class):
 
 # 이미지 전처리 함수 (훈련 과정과 동일하게)
 transform = transforms.Compose([
-    transforms.Resize((64, 64)),
+    transforms.Resize((256, 256)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.5], std=[0.5])
 ])
@@ -144,8 +144,8 @@ motor2.forward()
 try:
     # 카메라 캡처 초기화
     cap = cv2.VideoCapture(0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 64)  # 해상도 낮추기
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 64)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 256)  # 해상도 낮추기
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 256)
 
     while cap.isOpened():
         ret, frame = cap.read()
