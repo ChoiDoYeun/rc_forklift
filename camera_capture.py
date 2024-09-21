@@ -1,27 +1,30 @@
 import cv2
 from adafruit_servokit import ServoKit
+import os
 
 # 서보모터 초기화
 kit = ServoKit(channels=16)
 
 # 서보모터 초기 설정 (스티어링 휠과 카메라용 서보모터)
-kit.servo[0].angle = 90  # 스티어링 휠 서보모터 중립 (채널 0)
-kit.servo[1].angle = 90  # 카메라 서보모터 좌우 초기 설정 (채널 1)
-kit.servo[2].angle = 60  # 카메라 서보모터 상하 초기 설정 (채널 2)
+kit.servo[0].angle = 85  # 서보모터 1 초기 각도
+kit.servo[1].angle = 155  # 서보모터 2 초기 각도
 
 # 카메라 초기화 (OpenCV 사용)
 cap = cv2.VideoCapture(0)  # 카메라 장치 선택
 
 # 서보모터 각도 설정
-servo1_angle = 90  # 카메라 서보모터 1 좌우 각도
-servo2_angle = 60  # 카메라 서보모터 2 상하 각도
+servo1_angle = 85  # 서보모터 1 좌우 각도
+servo2_angle = 155  # 서보모터 2 상하 각도
+
+# 저장할 이미지 카운터
+img_counter = 0
 
 # 키보드로 서보모터 제어하는 함수
 def control_servo(key, servo1_angle, servo2_angle):
-    if key == ord('d'):  # 서보모터 1 각도 감소 (좌)
-        servo1_angle -= 5
-    elif key == ord('a'):  # 서보모터 1 각도 증가 (우)
+    if key == ord('d'):  # 서보모터 1 각도 증가 (우)
         servo1_angle += 5
+    elif key == ord('a'):  # 서보모터 1 각도 감소 (좌)
+        servo1_angle -= 5
     elif key == ord('w'):  # 서보모터 2 각도 감소 (상)
         servo2_angle -= 5
     elif key == ord('s'):  # 서보모터 2 각도 증가 (하)
@@ -32,13 +35,21 @@ def control_servo(key, servo1_angle, servo2_angle):
     servo2_angle = max(0, min(180, servo2_angle))
 
     # 서보모터 각도 적용
-    kit.servo[1].angle = servo1_angle
-    kit.servo[2].angle = servo2_angle
+    kit.servo[0].angle = servo1_angle
+    kit.servo[1].angle = servo2_angle
 
     # 서보모터 각도를 출력
-    print(f"Servo1 (Left/Right): {servo1_angle} deg, Servo2 (Up/Down): {servo2_angle} deg")
+    print(f"Servo1 (좌우): {servo1_angle}도, Servo2 (상하): {servo2_angle}도")
 
     return servo1_angle, servo2_angle
+
+# 이미지 저장 함수
+def save_image(frame, img_counter):
+    img_name = f"image_{img_counter}.png"
+    cv2.imwrite(img_name, frame)
+    print(f"{img_name} 저장 완료!")
+    img_counter += 1
+    return img_counter
 
 # 영상 출력 및 서보모터 제어
 while True:
@@ -58,6 +69,10 @@ while True:
     # 'q' 키를 누르면 종료
     if key == ord('q'):
         break
+
+    # 스페이스바를 누르면 이미지 저장
+    if key == ord(' '):
+        img_counter = save_image(frame_resized, img_counter)
 
     # 서보모터 제어 및 각도 출력
     servo1_angle, servo2_angle = control_servo(key, servo1_angle, servo2_angle)
