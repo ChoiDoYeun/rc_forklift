@@ -29,7 +29,7 @@ class MotorController:
         self.pwm.ChangeDutyCycle(speed)
 
     def forward(self):
-        self.set_speed(40)  # 모터 속도를 항상 40으로 설정
+        self.set_speed(30)  # 모터 속도를 항상 40으로 설정
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
 
