@@ -1,11 +1,8 @@
 import RPi.GPIO as GPIO
-import pygame
 import time
 import cv2
-import csv
 import os
 from adafruit_servokit import ServoKit
-import threading
 import numpy as np
 
 # GPIO 설정
@@ -58,6 +55,7 @@ colors = {
 # 카메라 설정
 cap = cv2.VideoCapture(0)
 initial_color = None
+waiting_time = 5  # 모터가 동작한 후 처음 색상 감지를 무시할 시간 (초)
 
 # 초기 색상 감지 함수
 def detect_initial_color():
@@ -89,6 +87,8 @@ def wait_for_start_command():
 
 # 색상 감지 및 모터 제어 함수
 def color_based_motor_control():
+    start_time = time.time()  # 모터가 동작한 시간을 기록
+
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -102,17 +102,20 @@ def color_based_motor_control():
             if contours:
                 largest_contour = max(contours, key=cv2.contourArea)
                 if cv2.contourArea(largest_contour) > 500:
-                    # 감지된 색상이 처음 감지한 색상과 같으면 멈춤
-                    if color_name == initial_color:
-                        motor1.stop()
-                        motor2.stop()
-                        print(f"Initial color {color_name} detected again. Motors stopped.")
-                        return
-                    else:
-                        # 다른 색상이 감지되면 계속 주행
-                        motor1.forward(40)
-                        motor2.forward(40)
-                        print(f"{color_name} detected. Motors running...")
+                    # 모터가 시작한 후 대기 시간을 지나야 색상을 확인
+                    elapsed_time = time.time() - start_time
+                    if elapsed_time > waiting_time:
+                        # 감지된 색상이 처음 감지한 색상과 같으면 멈춤
+                        if color_name == initial_color:
+                            motor1.stop()
+                            motor2.stop()
+                            print(f"Initial color {color_name} detected again. Motors stopped.")
+                            return
+                        else:
+                            # 다른 색상이 감지되면 계속 주행
+                            motor1.forward(40)
+                            motor2.forward(40)
+                            print(f"{color_name} detected. Motors running...")
 
 # 메인 실행 로직
 try:
@@ -121,7 +124,9 @@ try:
 
     # 사용자 명령 대기
     if wait_for_start_command():
-        # 색상에 따라 모터 제어
+        # 모터 동작 시작 후 색상 감지 및 제어
+        motor1.forward(40)
+        motor2.forward(40)
         color_based_motor_control()
 
 finally:
