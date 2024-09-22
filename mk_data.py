@@ -147,7 +147,7 @@ while running:
                     saving_data = False
                     stop_saving()
 
-            if event.button == 3:  # 버튼 3: 저장 시작
+            if event.button == 4:  # 버튼 3: 저장 시작
                 if not saving_data:
                     saving_data = True
                     start_saving()
