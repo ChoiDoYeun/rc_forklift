@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 import cv2
+import csv
 import os
 from adafruit_servokit import ServoKit
 import numpy as np
@@ -42,7 +43,11 @@ motor2 = MotorController(16, 13, 26)
 
 # PCA9685 모듈 초기화 (서보모터)
 kit = ServoKit(channels=16)
+
+# 서보모터 초기 설정
 kit.servo[0].angle = 90  # 스티어링 휠 서보모터 중립 (채널 0)
+kit.servo[1].angle = 85
+kit.servo[2].angle = 110
 
 # 각 색상의 HSV 범위 정의
 colors = {
@@ -85,6 +90,21 @@ def wait_for_start_command():
         return True
     return False
 
+# 서보 앵글 제어 함수 (CSV 파일에서 각도 불러오기)
+def control_servo_from_csv():
+    predicted_servo_angle_path = 'v2_predicted_servo_angle.csv'  # 예측 CSV 파일 경로
+
+    with open(predicted_servo_angle_path, 'r') as file:
+        reader = csv.reader(file)
+        next(reader)  # 헤더 스킵
+        frame_count = 0
+        for row in reader:
+            servo_angle = int(row[0])  # 서보 각도 값
+            kit.servo[0].angle = servo_angle  # 서보모터에 각도 적용
+            print(f"Frame {frame_count}: Servo Angle Set to {servo_angle}")
+            time.sleep(0.1)  # 0.1초 대기 (프레임당 0.1초)
+            frame_count += 1
+
 # 색상 감지 및 모터 제어 함수
 def color_based_motor_control():
     start_time = time.time()  # 모터가 동작한 시간을 기록
@@ -124,6 +144,9 @@ try:
 
     # 사용자 명령 대기
     if wait_for_start_command():
+        # 서보모터 앵글 제어 시작
+        control_servo_from_csv()
+        
         # 모터 동작 시작 후 색상 감지 및 제어
         motor1.forward(40)
         motor2.forward(40)
