@@ -6,7 +6,7 @@ from pyzbar.pyzbar import decode
 
 # 경로 설정
 base_path = "/home/dodo/rc_forklift/"
-model_path = base_path + 'best.pt'
+model_path = base_path + 'qrcode.pt'
 cropped_img_path = base_path + 'cropped_test.png'
 
 # 모델 로드
