@@ -60,6 +60,14 @@ colors = {
 
 # 카메라 설정
 cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
+cap.set(cv2.CAP_PROP_FPS, 60)
+
+# 비디오 저장 설정 (코덱: XVID, 해상도: 640x640, FPS: 60)
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+video_output = cv2.VideoWriter('output.avi', fourcc, 60.0, (640, 640))
+
 initial_color = None
 waiting_time = 0.5  # 모터가 동작한 후, resume 후 대기 시간 (초)
 last_frame_number = 0  # 마지막으로 읽은 프레임 번호를 저장
@@ -134,6 +142,9 @@ def color_based_motor_control():
         if not ret:
             continue
 
+        # 비디오 저장
+        video_output.write(frame)
+
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         for color_name, (lower, upper) in colors.items():
             mask = cv2.inRange(hsv, np.array(lower), np.array(upper))
@@ -193,21 +204,11 @@ try:
                 # 서보모터 재개 이벤트 초기화
                 stop_servo_event.clear()
                 # 서보모터 제어 스레드 재개
-                servo_thread = threading.Thread(target=control_servo_from_csv, args=(last_frame_number + 1,))
-                servo_thread.start()
-                # 색상 감지 및 모터 제어 스레드 재개
-                color_thread = threading.Thread(target=color_based_motor_control)
-                color_thread.start()
-                # 색상 감지 스레드가 종료될 때까지 대기
+                servo_thread = threading.Thread(target=control_servo_from_csv, args=(last_frame_number + 1,)) servo_thread.start() # 색상 감지 및 모터 제어 스레드 재개 
+                olor_thread = threading.Thread(target=color_based_motor_control) color_thread.start() # 색상 감지 스레드가 종료될 때까지 대기
                 color_thread.join()
 
-except KeyboardInterrupt:
-    print("Interrupted by user.")
+except KeyboardInterrupt: print("Interrupted by user.")
 
-finally:
-    # 종료 시 모터와 GPIO 정리
-    motor1.cleanup()
-    motor2.cleanup()
-    cap.release()
-    GPIO.cleanup()
-    print("Program terminated.")
+finally: # 비디오 저장 종료 video_output.release() # 종료 시 모터와 GPIO 정리
+    motor1.cleanup() motor2.cleanup() cap.release() GPIO.cleanup() print("Program terminated.")
