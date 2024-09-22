@@ -129,4 +129,4 @@ finally:
     motor2.cleanup()
     cap.release()
     GPIO.cleanup()
-    print("Progr
+    print("Program terminated.")
