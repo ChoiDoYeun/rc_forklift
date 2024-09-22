@@ -4,6 +4,7 @@ import cv2
 import csv
 import os
 from adafruit_servokit import ServoKit
+import threading
 import numpy as np
 
 # GPIO 설정
@@ -144,13 +145,17 @@ try:
 
     # 사용자 명령 대기
     if wait_for_start_command():
-        # 서보모터 앵글 제어 시작
-        control_servo_from_csv()
+        # 서보모터 앵글 제어 스레드 시작 (비동기 실행)
+        servo_thread = threading.Thread(target=control_servo_from_csv)
+        servo_thread.start()
         
         # 모터 동작 시작 후 색상 감지 및 제어
         motor1.forward(40)
         motor2.forward(40)
         color_based_motor_control()
+
+        # 서보모터 제어 스레드 종료 대기
+        servo_thread.join()
 
 finally:
     # 종료 시 모터와 GPIO 정리
