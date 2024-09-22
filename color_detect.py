@@ -27,10 +27,9 @@ while True:
         upper_bound = np.array(upper)
         mask = cv2.inRange(hsv, lower_bound, upper_bound)
 
-        # 결과를 화면에 표시
-        result = cv2.bitwise_and(frame, frame, mask=mask)
-
-        cv2.imshow(f"{color_name} detection", result)
+        # 마스크에서 픽셀이 검출되면 그 색상을 감지했다고 판단
+        if np.any(mask):
+            print(f"{color_name} detected")
 
     # 'q' 키를 누르면 종료
     if cv2.waitKey(1) & 0xFF == ord('q'):
