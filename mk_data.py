@@ -175,4 +175,4 @@ while running:
         print(f"프레임 {frame_count}, 서보 각도 {servo_angle}, 속도 {speed if motor_running else 0} 저장 완료")
         frame_count += 1
 
-    time
+    time.sleep(1/60)
