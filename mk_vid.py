@@ -69,7 +69,7 @@ resume_lock = threading.Lock()  # 재개 시 스레드 안전을 위한 락
 
 # 비디오 저장 설정
 fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 코덱 설정
-out = cv2.VideoWriter('output.avi', fourcc, 60.0, (640, 640))  # 비디오 파일 저장, fps=60, 해상도 640x640
+out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 640))  # 비디오 파일 저장, fps=60, 해상도 640x640
 
 # 비디오 캡처 및 저장 함수
 def video_capture(stop_event):
@@ -78,7 +78,7 @@ def video_capture(stop_event):
         if ret:
             frame = cv2.resize(frame, (640, 640))  # 640x640 해상도로 크기 조정
             out.write(frame)  # 프레임 저장
-        time.sleep(1 / 60)  # 60fps로 저장
+        time.sleep(1 / 20)  # 60fps로 저장
 
 # 초기 색상 감지 함수
 def detect_initial_color():
