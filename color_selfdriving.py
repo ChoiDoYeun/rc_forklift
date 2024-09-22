@@ -62,6 +62,7 @@ colors = {
 cap = cv2.VideoCapture(0)
 initial_color = None
 waiting_time = 0.25  # 모터가 동작한 후 처음 색상 감지를 무시할 시간 (초)
+last_frame_number = 0  # 마지막으로 읽은 프레임 번호를 저장
 
 # 초기 색상 감지 함수
 def detect_initial_color():
@@ -92,7 +93,8 @@ def wait_for_start_command():
     return False
 
 # 서보 앵글 제어 함수 (CSV 파일에서 각도 불러오기)
-def control_servo_from_csv():
+def control_servo_from_csv(start_frame=0):
+    global last_frame_number
     predicted_servo_angle_path = 'v2_predicted_servo_angle.csv'  # 예측 CSV 파일 경로
 
     with open(predicted_servo_angle_path, 'r') as file:
@@ -100,14 +102,17 @@ def control_servo_from_csv():
         next(reader)  # 헤더 스킵
         frame_count = 0
         for row in reader:
-            servo_angle = int(row[0])  # 서보 각도 값
-            kit.servo[0].angle = servo_angle  # 서보모터에 각도 적용
-            print(f"Frame {frame_count}: Servo Angle Set to {servo_angle}")
-            time.sleep(0.1)  # 0.1초 대기 (프레임당 0.1초)
+            if frame_count >= start_frame:
+                servo_angle = int(row[0])  # 서보 각도 값
+                kit.servo[0].angle = servo_angle  # 서보모터에 각도 적용
+                print(f"Frame {frame_count}: Servo Angle Set to {servo_angle}")
+                time.sleep(0.1)  # 0.1초 대기 (프레임당 0.1초)
             frame_count += 1
+        last_frame_number = frame_count  # 마지막 프레임 번호 저장
 
 # 색상 감지 및 모터 제어 함수
 def color_based_motor_control():
+    global last_frame_number
     start_time = time.time()  # 모터가 동작한 시간을 기록
 
     while True:
@@ -130,7 +135,8 @@ def color_based_motor_control():
                         if color_name == initial_color:
                             motor1.stop()
                             motor2.stop()
-                            print(f"Initial color {color_name} detected again. Motors stopped.")
+                            kit.servo[0].angle = 90  # 서보모터 중립
+                            print(f"Initial color {color_name} detected again. Motors and servo stopped.")
                             return
                         else:
                             # 다른 색상이 감지되면 계속 주행
@@ -146,7 +152,7 @@ try:
     # 사용자 명령 대기
     if wait_for_start_command():
         # 서보모터 앵글 제어 스레드 시작 (비동기 실행)
-        servo_thread = threading.Thread(target=control_servo_from_csv)
+        servo_thread = threading.Thread(target=control_servo_from_csv, args=(last_frame_number,))
         servo_thread.start()
         
         # 모터 동작 시작 후 색상 감지 및 제어
@@ -156,6 +162,15 @@ try:
 
         # 서보모터 제어 스레드 종료 대기
         servo_thread.join()
+
+    # 색상 감지 후 사용자 입력을 기다려서 서보모터 제어 재개
+    while True:
+        command = input("Enter 'resume' to continue servo operation: ")
+        if command.lower() == 'resume':
+            print("Resuming servo operation...")
+            servo_thread = threading.Thread(target=control_servo_from_csv, args=(last_frame_number,))
+            servo_thread.start()
+            servo_thread.join()
 
 finally:
     # 종료 시 모터와 GPIO 정리
