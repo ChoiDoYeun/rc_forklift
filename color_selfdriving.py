@@ -61,7 +61,7 @@ colors = {
 # 카메라 설정
 cap = cv2.VideoCapture(0)
 initial_color = None
-waiting_time = 0.5  # 모터가 동작한 후 처음 색상 감지를 무시할 시간 (초)
+waiting_time = 0.5  # 모터가 동작한 후, resume 후 대기 시간 (초)
 last_frame_number = 0  # 마지막으로 읽은 프레임 번호를 저장
 stop_servo_event = threading.Event()  # 서보모터를 중지하는 이벤트
 resume_event = threading.Event()  # 서보모터를 재개하는 이벤트
@@ -186,6 +186,7 @@ try:
             command = input("Enter 'resume' to continue servo operation: ")
             if command.lower() == 'resume':
                 print(f"Resuming servo operation from frame {last_frame_number + 1}...")
+                time.sleep(waiting_time)  # resume 후 0.5초 대기
                 # 모터 다시 앞으로 움직이기
                 motor1.forward(40)
                 motor2.forward(40)
