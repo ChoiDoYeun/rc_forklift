@@ -59,7 +59,7 @@ def video_capture(stop_event):
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
     fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 코덱 설정
-    out = cv2.VideoWriter('output.avi', fourcc, 10.0, (640, 640))  # fps=10, 해상도=(640, 640)
+    out = cv2.VideoWriter('output.avi', fourcc, 60.0, (640, 640))  # fps=10, 해상도=(640, 640)
 
     while not stop_event.is_set():
         ret, frame = cap.read()
@@ -68,7 +68,7 @@ def video_capture(stop_event):
             out.write(frame)
         else:
             break
-        time.sleep(0.1)  # 프레임당 0.1초 대기
+        time.sleep(1/60)  # 프레임당 0.1초 대기
 
     cap.release()
     out.release()
