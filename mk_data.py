@@ -23,7 +23,7 @@ class MotorController:
     def set_speed(self, speed):
         self.pwm.ChangeDutyCycle(speed)
 
-    def forward(self, speed):
+    def forward(self, speed=40):  # 속도 고정 40
         self.set_speed(speed)
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
@@ -44,7 +44,7 @@ motor2 = MotorController(16, 13, 26)  # 모터2: en(16), in1(13), in2(26)
 kit = ServoKit(channels=16)
 
 # 서보모터 초기 설정 (스티어링 휠, 채널 0 사용)
-kit.servo[0].angle = 85  # 스티어링 휠 서보모터 중립 (채널 0)
+kit.servo[0].angle = 90  # 스티어링 휠 서보모터 중립 (채널 0)
 
 # 카메라 조향용 서보모터 (채널 1과 채널 2 사용)
 kit.servo[1].angle = 90  # 첫 번째 카메라 서보모터 초기 설정 (채널 1)
@@ -61,7 +61,7 @@ if pygame.joystick.get_count() == 0:
     print("조이스틱이 연결되어 있지 않습니다.")
     GPIO.cleanup()
     exit()
-    
+
 joystick = pygame.joystick.Joystick(0)
 joystick.init()
 
@@ -76,8 +76,8 @@ drive_number = 0  # 드라이브 번호
 drive_dir = ''
 csv_file_path = ''
 
-# 속도 제어 변수
-speed = 40  # 초기 속도 40%
+# 속도 고정 값
+speed = 40  # 항상 속도 40%
 
 # CSV 파일 열기 및 저장 제어 함수
 def start_saving():
@@ -115,7 +115,7 @@ def start_saving():
     # CSV 파일 열기 및 헤더 작성
     csv_file = open(csv_file_path, 'w', newline='')
     csv_writer = csv.writer(csv_file)
-    csv_writer.writerow(['frame', 'servo_angle', 'speed'])  # CSV 헤더 수정
+    csv_writer.writerow(['frame', 'servo_angle', 'speed'])  # CSV 헤더
     frame_count = 0  # 프레임 번호 초기화
     print(f"데이터 저장 시작: {csv_file_path}")
 
@@ -127,7 +127,7 @@ def stop_saving():
         print("데이터 저장 중단.")
 
 # 서보모터 각도 초기값 설정
-servo_angle = 85  # 스티어링 서보모터 중립
+servo_angle = 90  # 스티어링 서보모터 중립
 
 # 메인 루프
 running = True
@@ -153,25 +153,15 @@ while running:
         elif event.type == pygame.QUIT:
             running = False
 
-    # 우측 스틱 위아래 (속도 제어: 축 3)
-    axis_value_speed = joystick.get_axis(3)  # 축 3: 우측 스틱 위아래
-    if axis_value_speed < -0.1:  # 스틱을 위로 올리면 속도 증가
-        speed = min(speed + 1, 100)  # 속도 증가, 최대 100%
-        motor1.forward(speed)
-        motor2.forward(speed)
-        print(f"속도 상승: {speed}")
-    elif axis_value_speed > 0.1:  # 스틱을 아래로 내리면 속도 감소
-        speed = max(speed - 1, 0)  # 속도 감소, 최소 0%
-        motor1.forward(speed)
-        motor2.forward(speed)
-        print(f"속도 하강: {speed}")
-    # 만약 축 값이 -0.1 ~ 0.1 사이이면 속도 유지
-
     # 주행 중에도 계속 각도 조정 가능
     axis_value_steer = joystick.get_axis(0)  # 좌측 스틱 (스티어링 휠 서보모터 제어)
     servo_angle = (1 - axis_value_steer) * 90  # 각도를 0 ~ 180도 범위로 변환
     servo_angle = max(0, min(180, servo_angle))  # 각도를 0 ~ 180도로 제한
     kit.servo[0].angle = servo_angle  # 스티어링 서보모터 각도 설정
+
+    # 모터 속도는 항상 40으로 유지
+    motor1.forward(speed)
+    motor2.forward(speed)
 
     # 데이터 저장 (저장 중일 때만)
     if saving_data and csv_writer:
