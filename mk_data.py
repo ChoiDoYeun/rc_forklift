@@ -57,6 +57,11 @@ pygame.init()
 pygame.joystick.init()
 
 # 첫 번째 조이스틱을 선택
+if pygame.joystick.get_count() == 0:
+    print("조이스틱이 연결되어 있지 않습니다.")
+    GPIO.cleanup()
+    exit()
+    
 joystick = pygame.joystick.Joystick(0)
 joystick.init()
 
@@ -70,6 +75,9 @@ drive_number = 0  # 드라이브 번호
 # 드라이브 디렉토리 및 파일 경로를 관리하는 변수
 drive_dir = ''
 csv_file_path = ''
+
+# 속도 제어 변수
+speed = 40  # 초기 속도 40%
 
 # CSV 파일 열기 및 저장 제어 함수
 def start_saving():
@@ -107,7 +115,7 @@ def start_saving():
     # CSV 파일 열기 및 헤더 작성
     csv_file = open(csv_file_path, 'w', newline='')
     csv_writer = csv.writer(csv_file)
-    csv_writer.writerow(['frame', 'servo_angle'])  # CSV 헤더 작성
+    csv_writer.writerow(['frame', 'servo_angle', 'speed'])  # CSV 헤더 수정
     frame_count = 0  # 프레임 번호 초기화
     print(f"데이터 저장 시작: {csv_file_path}")
 
@@ -125,41 +133,53 @@ servo_angle = 85  # 스티어링 서보모터 중립
 running = True
 while running:
     for event in pygame.event.get():
-        # 버튼 10을 눌러 정지
+        # 버튼 이벤트 처리
         if event.type == pygame.JOYBUTTONDOWN:
             if event.button == 10:  # 버튼 10 : 정지 버튼
                 motor1.stop()
                 motor2.stop()
+                print("모터 정지")
 
-            # 버튼 0을 눌러 저장 중단
             if event.button == 0:  # 버튼 0: 저장 중단
                 if saving_data:
                     saving_data = False
                     stop_saving()
 
-            # 버튼 3을 눌러 저장 시작
             if event.button == 3:  # 버튼 3: 저장 시작
                 if not saving_data:
                     saving_data = True
                     start_saving()
 
-        # 종료 이벤트 처리
         elif event.type == pygame.QUIT:
             running = False
 
+    # 우측 스틱 위아래 (속도 제어: 축 3)
+    axis_value_speed = joystick.get_axis(3)  # 축 3: 우측 스틱 위아래
+    if axis_value_speed < -0.1:  # 스틱을 위로 올리면 속도 증가
+        speed = min(speed + 1, 100)  # 속도 증가, 최대 100%
+        motor1.forward(speed)
+        motor2.forward(speed)
+        print(f"속도 상승: {speed}")
+    elif axis_value_speed > 0.1:  # 스틱을 아래로 내리면 속도 감소
+        speed = max(speed - 1, 0)  # 속도 감소, 최소 0%
+        motor1.forward(speed)
+        motor2.forward(speed)
+        print(f"속도 하강: {speed}")
+    # 만약 축 값이 -0.1 ~ 0.1 사이이면 속도 유지
+
     # 주행 중에도 계속 각도 조정 가능
-    axis_value = joystick.get_axis(0)  # 좌측 스틱 (스티어링 휠 서보모터 제어)
-    servo_angle = (1 - axis_value) * 90  # 각도를 0 ~ 180도 범위로 변환
+    axis_value_steer = joystick.get_axis(0)  # 좌측 스틱 (스티어링 휠 서보모터 제어)
+    servo_angle = (1 - axis_value_steer) * 90  # 각도를 0 ~ 180도 범위로 변환
     servo_angle = max(0, min(180, servo_angle))  # 각도를 0 ~ 180도로 제한
     kit.servo[0].angle = servo_angle  # 스티어링 서보모터 각도 설정
 
-    # 데이터 저장 (버튼 3을 눌렀을 때만)
+    # 데이터 저장 (저장 중일 때만)
     if saving_data and csv_writer:
-        csv_writer.writerow([frame_count, servo_angle])  # 프레임 번호와 서보 각도 저장
-        print(f"프레임 {frame_count}, 서보 각도 {servo_angle} 저장 완료")
+        csv_writer.writerow([frame_count, servo_angle, speed])  # 프레임 번호, 서보 각도, 속도 저장
+        print(f"프레임 {frame_count}, 서보 각도 {servo_angle}, 속도 {speed} 저장 완료")
         frame_count += 1
 
-    time.sleep(0.0167)  # 0.0167초마다 상태 기록
+    time.sleep(0.0167)  # 약 60Hz 주기로 상태 기록
 
 # Pygame 종료
 pygame.quit()
@@ -169,4 +189,6 @@ if csv_file:
     csv_file.close()
 
 # GPIO 정리
+motor1.cleanup()
+motor2.cleanup()
 GPIO.cleanup()
