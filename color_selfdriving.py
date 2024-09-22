@@ -6,6 +6,7 @@ import csv
 import os
 from adafruit_servokit import ServoKit
 import threading
+import numpy as np
 
 # GPIO 설정
 GPIO.setmode(GPIO.BCM)
