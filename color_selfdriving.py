@@ -61,7 +61,7 @@ colors = {
 # 카메라 설정
 cap = cv2.VideoCapture(0)
 initial_color = None
-waiting_time = 0.5  # 모터가 동작한 후 처음 색상 감지를 무시할 시간 (초)
+waiting_time = 5  # 모터가 동작한 후 처음 색상 감지를 무시할 시간 (초)
 last_frame_number = 0  # 마지막으로 읽은 프레임 번호를 저장
 stop_servo = False  # 서보모터를 중지하는 플래그
 
@@ -163,8 +163,8 @@ try:
         servo_thread.start()
         
         # 모터 동작 시작 후 색상 감지 및 제어
-        motor1.forward(40)
-        motor2.forward(40)
+        motor1.forward(40)  # 모터 동작 시작
+        motor2.forward(40)  # 모터 동작 시작
         color_based_motor_control()
 
         # 서보모터 제어 스레드 종료 대기
