@@ -61,7 +61,7 @@ colors = {
 # 카메라 설정
 cap = cv2.VideoCapture(0)
 initial_color = None
-waiting_time = 5  # 모터가 동작한 후 처음 색상 감지를 무시할 시간 (초)
+waiting_time = 0.25  # 모터가 동작한 후 처음 색상 감지를 무시할 시간 (초)
 
 # 초기 색상 감지 함수
 def detect_initial_color():
