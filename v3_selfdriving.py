@@ -10,8 +10,33 @@ import threading
 # GPIO 설정
 GPIO.setmode(GPIO.BCM)
 
-# 모터 제어 클래스 (생략된 부분은 기존 코드와 동일)
+# 모터 제어 클래스
+class MotorController:
+    def __init__(self, en, in1, in2):
+        self.en = en
+        self.in1 = in1
+        self.in2 = in2
+        GPIO.setup(self.en, GPIO.OUT)
+        GPIO.setup(self.in1, GPIO.OUT)
+        GPIO.setup(self.in2, GPIO.OUT)
+        self.pwm = GPIO.PWM(self.en, 100)  # PWM 주파수 100Hz
+        self.pwm.start(0)
 
+    def set_speed(self, speed):
+        self.pwm.ChangeDutyCycle(speed)
+
+    def forward(self, speed=40):
+        self.set_speed(speed)
+        GPIO.output(self.in1, GPIO.HIGH)
+        GPIO.output(self.in2, GPIO.LOW)
+
+    def stop(self):
+        self.set_speed(0)
+        GPIO.output(self.in1, GPIO.LOW)
+        GPIO.output(self.in2, GPIO.LOW)
+
+    def cleanup(self):
+        self.pwm.stop()
 # 모터 초기화 (왼쪽 모터: motor1, 오른쪽 모터: motor2)
 motor1 = MotorController(18, 17, 27)  # 모터1: en(18), in1(17), in2(27)
 motor2 = MotorController(16, 13, 26)  # 모터2: en(16), in1(13), in2(26)
