@@ -2,7 +2,7 @@ import RPi.GPIO as GPIO
 import pygame
 import time
 import csv
-import os  # 추가된 부분
+import os
 from adafruit_servokit import ServoKit
 
 # GPIO 설정
@@ -23,7 +23,7 @@ class MotorController:
     def set_speed(self, speed):
         self.pwm.ChangeDutyCycle(speed)
 
-    def forward(self, speed=40):  # 속도 고정 40
+    def forward(self, speed=40):
         self.set_speed(speed)
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
@@ -76,8 +76,9 @@ drive_number = 0  # 드라이브 번호
 drive_dir = ''
 csv_file_path = ''
 
-# 속도 고정 값
-speed = 40  # 항상 속도 40%
+# 속도 제어 변수
+speed = 40  # 고정 속도 40
+motor_running = False  # 모터 상태 (처음엔 정지 상태)
 
 # CSV 파일 열기 및 저장 제어 함수
 def start_saving():
@@ -138,6 +139,7 @@ while running:
             if event.button == 10:  # 버튼 10 : 정지 버튼
                 motor1.stop()
                 motor2.stop()
+                motor_running = False  # 모터 정지 상태
                 print("모터 정지")
 
             if event.button == 0:  # 버튼 0: 저장 중단
@@ -153,32 +155,24 @@ while running:
         elif event.type == pygame.QUIT:
             running = False
 
+    # 우측 스틱을 위로 올리면 모터가 40의 속도로 구동됨
+    axis_value_speed = joystick.get_axis(3)  # 우측 스틱 위아래 축
+    if axis_value_speed < -0.1:  # 스틱을 위로 올리면 모터 작동
+        if not motor_running:  # 모터가 정지 상태일 때만 실행
+            motor1.forward(speed)
+            motor2.forward(speed)
+            motor_running = True
+
     # 주행 중에도 계속 각도 조정 가능
     axis_value_steer = joystick.get_axis(0)  # 좌측 스틱 (스티어링 휠 서보모터 제어)
     servo_angle = (1 - axis_value_steer) * 90  # 각도를 0 ~ 180도 범위로 변환
     servo_angle = max(0, min(180, servo_angle))  # 각도를 0 ~ 180도로 제한
     kit.servo[0].angle = servo_angle  # 스티어링 서보모터 각도 설정
 
-    # 모터 속도는 항상 40으로 유지
-    motor1.forward(speed)
-    motor2.forward(speed)
-
     # 데이터 저장 (저장 중일 때만)
     if saving_data and csv_writer:
-        csv_writer.writerow([frame_count, servo_angle, speed])  # 프레임 번호, 서보 각도, 속도 저장
-        print(f"프레임 {frame_count}, 서보 각도 {servo_angle}, 속도 {speed} 저장 완료")
+        csv_writer.writerow([frame_count, servo_angle, speed if motor_running else 0])  # 프레임 번호, 서보 각도, 속도 저장
+        print(f"프레임 {frame_count}, 서보 각도 {servo_angle}, 속도 {speed if motor_running else 0} 저장 완료")
         frame_count += 1
 
-    time.sleep(0.0167)  # 약 60Hz 주기로 상태 기록
-
-# Pygame 종료
-pygame.quit()
-
-# CSV 파일 정리
-if csv_file:
-    csv_file.close()
-
-# GPIO 정리
-motor1.cleanup()
-motor2.cleanup()
-GPIO.cleanup()
+    time
