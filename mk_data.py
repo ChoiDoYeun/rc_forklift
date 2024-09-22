@@ -136,7 +136,7 @@ while running:
     for event in pygame.event.get():
         # 버튼 이벤트 처리
         if event.type == pygame.JOYBUTTONDOWN:
-            if event.button == 10:  # 버튼 10 : 정지 버튼
+            if event.button == 14:  # 버튼 10 : 정지 버튼
                 motor1.stop()
                 motor2.stop()
                 motor_running = False  # 모터 정지 상태
