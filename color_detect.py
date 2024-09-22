@@ -27,9 +27,21 @@ while True:
         upper_bound = np.array(upper)
         mask = cv2.inRange(hsv, lower_bound, upper_bound)
 
-        # 마스크에서 픽셀이 검출되면 그 색상을 감지했다고 판단
-        if np.any(mask):
-            print(f"{color_name} detected")
+        # 마스크에서 컨투어 찾기
+        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        if contours:
+            # 가장 큰 컨투어 찾기
+            largest_contour = max(contours, key=cv2.contourArea)
+            x, y, w, h = cv2.boundingRect(largest_contour)  # 사각형을 위한 좌표와 크기 계산
+
+            # 컨투어가 일정 크기 이상일 때만 사각형 그리기
+            if w > 20 and h > 20:
+                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                print(f"{color_name} detected: Position: ({x}, {y}), Width: {w}, Height: {h}")
+
+    # 프레임을 화면에 표시
+    cv2.imshow('Frame', frame)
 
     # 'q' 키를 누르면 종료
     if cv2.waitKey(1) & 0xFF == ord('q'):
