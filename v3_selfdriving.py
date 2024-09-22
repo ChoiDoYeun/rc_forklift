@@ -66,7 +66,7 @@ fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 코덱 설정 (XVID)
 out = cv2.VideoWriter(video_filename, fourcc, 60.0, (640, 640))  # 60fps, 640x640 해상도
 
 # predicted_servo_angle.csv 파일에서 각 프레임당 servo_angle 값을 불러오기
-predicted_servo_angle_path = 'v3_predicted_servo_angle.csv'  # 예측 CSV 파일 경로
+predicted_servo_angle_path = 'v2_predicted_servo_angle.csv'  # 예측 CSV 파일 경로
 
 with open(predicted_servo_angle_path, 'r') as file:
     reader = csv.reader(file)
