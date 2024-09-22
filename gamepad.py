@@ -9,7 +9,7 @@ pygame.joystick.init()
 
 # 연결된 조이스틱이 있는지 확인
 if pygame.joystick.get_count() == 0:
-    print("연결된 조이스틱이 없습니다.")
+    print("연결된 조이스틱이 없습니다")
 else:
     # 첫 번째 조이스틱을 선택
     joystick = pygame.joystick.Joystick(0)
