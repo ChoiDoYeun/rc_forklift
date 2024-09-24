@@ -6,6 +6,7 @@ import os
 from adafruit_servokit import ServoKit
 import threading
 import numpy as np
+import pygame
 
 # GPIO 설정
 GPIO.setmode(GPIO.BCM)
@@ -57,7 +58,6 @@ colors = {
     "red": [(0, 120, 70), (10, 255, 255)],
     "blue": [(110, 50, 50), (130, 255, 255)],
     "yellow": [(20, 100, 100), (30, 255, 255)]
-    #"black": [(0, 0, 0), (180, 255, 50)]
 }
 
 # 카메라 설정
@@ -89,13 +89,23 @@ def detect_initial_color():
                     print(f"Initial color detected: {color_name}")
                     return
 
-# 사용자 명령을 입력받는 함수
-def wait_for_start_command():
+# 사용자 명령을 대체할 Joystick 입력 처리 함수
+def joystick_input():
+    pygame.init()
+    pygame.joystick.init()
+
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init()
+
     while True:
-        command = input("Enter 'start' to begin motor operation: ")
-        if command.lower() == 'start':
+        pygame.event.pump()
+        if joystick.get_button(4):  # 버튼 4: 'start' 대체
             print("Motor started!")
-            return True
+            return 'start'
+        if joystick.get_button(0):  # 버튼 0: 'resume' 대체
+            print("Resuming servo operation")
+            return 'resume'
+        time.sleep(0.1)
 
 # 서보 앵글 제어 함수 (CSV 파일에서 각도 불러오기)
 def control_servo_from_csv(start_frame=0):
@@ -167,42 +177,41 @@ try:
     # 초기 색상 감지
     detect_initial_color()
 
-    # 사용자 명령 대기
-    if wait_for_start_command():
-        # 모터 동작 시작
-        motor1.forward(speed)
-        motor2.forward(speed)
+    # Joystick 명령 대기
+    while True:
+        command = joystick_input()
+        if command == 'start':
+            # 모터 동작 시작
+            motor1.forward(speed)
+            motor2.forward(speed)
 
-        # 서보모터 제어 스레드 시작
-        servo_thread = threading.Thread(target=control_servo_from_csv, args=(last_frame_number,))
-        servo_thread.start()
+            # 서보모터 제어 스레드 시작
+            servo_thread = threading.Thread(target=control_servo_from_csv, args=(last_frame_number,))
+            servo_thread.start()
 
-        # 색상 감지 및 모터 제어 스레드 시작
-        color_thread = threading.Thread(target=color_based_motor_control)
-        color_thread.start()
+            # 색상 감지 및 모터 제어 스레드 시작
+            color_thread = threading.Thread(target=color_based_motor_control)
+            color_thread.start()
 
-        # 색상 감지 스레드가 종료될 때까지 대기
-        color_thread.join()
+            # 색상 감지 스레드가 종료될 때까지 대기
+            color_thread.join()
 
-        # 색상 감지 후 사용자 입력을 기다려서 서보모터 제어 재개
-        while True:
-            command = input("Enter 'resume' to continue servo operation: ")
-            if command.lower() == 'resume':
-                print(f"Resuming servo operation from frame {last_frame_number + 1}...")
-                time.sleep(waiting_time)  # resume 후 0.5초 대기
-                # 모터 다시 앞으로 움직이기
-                motor1.forward(speed)
-                motor2.forward(speed)
-                # 서보모터 재개 이벤트 초기화
-                stop_servo_event.clear()
-                # 서보모터 제어 스레드 재개
-                servo_thread = threading.Thread(target=control_servo_from_csv, args=(last_frame_number + 1,))
-                servo_thread.start()
-                # 색상 감지 및 모터 제어 스레드 재개
-                color_thread = threading.Thread(target=color_based_motor_control)
-                color_thread.start()
-                # 색상 감지 스레드가 종료될 때까지 대기
-                color_thread.join()
+        elif command == 'resume':
+            print(f"Resuming servo operation from frame {last_frame_number + 1}...")
+            time.sleep(waiting_time)  # resume 후 0.5초 대기
+            # 모터 다시 앞으로 움직이기
+            motor1.forward(speed)
+            motor2.forward(speed)
+            # 서보모터 재개 이벤트 초기화
+            stop_servo_event.clear()
+            # 서보모터 제어 스레드 재개
+            servo_thread = threading.Thread(target=control_servo_from_csv, args=(last_frame_number + 1,))
+            servo_thread.start()
+            # 색상 감지 및 모터 제어 스레드 재개
+            color_thread = threading.Thread(target=color_based_motor_control)
+            color_thread.start()
+            # 색상 감지 스레드가 종료될 때까지 대기
+            color_thread.join()
 
 except KeyboardInterrupt:
     print("Interrupted by user.")
@@ -213,4 +222,5 @@ finally:
     motor2.cleanup()
     cap.release()
     GPIO.cleanup()
+    pygame.quit()
     print("Program terminated.")
