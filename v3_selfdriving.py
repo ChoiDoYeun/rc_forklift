@@ -53,32 +53,6 @@ kit.servo[2].angle = 90
 motor1.forward(speed=100)
 motor2.forward(speed=100)
 
-# 비디오 캡처 함수
-def video_capture(stop_event):
-    cap = cv2.VideoCapture(0)  # 0번 카메라 (웹캠)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640)
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')  # 코덱 설정
-    out = cv2.VideoWriter('output.avi', fourcc, 60.0, (640, 640))  # fps=10, 해상도=(640, 640)
-
-    while not stop_event.is_set():
-        ret, frame = cap.read()
-        if ret:
-            frame = cv2.resize(frame, (640, 640))
-            out.write(frame)
-        else:
-            break
-
-    cap.release()
-    out.release()
-
-# 스레드 종료를 위한 이벤트 객체 생성
-stop_event = threading.Event()
-
-# 비디오 캡처 스레드 시작
-video_thread = threading.Thread(target=video_capture, args=(stop_event,))
-video_thread.start()
-
 # predicted_servo_angle.csv 파일에서 각 프레임당 servo_angle 값을 불러오기
 predicted_servo_angle_path = 'predicted_servo_angle.csv'  # 예측 CSV 파일 경로
 
