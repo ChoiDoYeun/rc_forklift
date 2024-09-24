@@ -11,7 +11,7 @@ import numpy as np
 # GPIO 설정
 GPIO.setmode(GPIO.BCM)
 
-# 모터 제어 클래스 (기존 코드)
+# 모터 제어 클래스
 class MotorController:
     def __init__(self, en, in1, in2):
         self.en = en
@@ -73,7 +73,7 @@ stop_servo_event = threading.Event()  # 서보모터를 중지하는 이벤트
 resume_lock = threading.Lock()  # 서보모터 재개 시 락
 color_detection_active = True  # 색상 감지 활성화 여부
 
-# 초기 색상 감지 함수 (기존 코드)
+# 초기 색상 감지 함수
 def detect_initial_color():
     global initial_color
     cap = cv2.VideoCapture(0)
@@ -131,7 +131,7 @@ def color_based_motor_control():
         for event in pygame.event.get():
             if event.type == pygame.JOYBUTTONDOWN:
                 # 조이스틱 버튼 14로 모터 시작
-                if joystick.get_button(14):
+                if joystick.get_button(4):
                     print("Joystick button 14 pressed: Motor started")
                     motor1.forward(speed)
                     motor2.forward(speed)
@@ -139,7 +139,7 @@ def color_based_motor_control():
                     return
 
                 # 조이스틱 버튼 4으로 서보모터 재개
-                elif joystick.get_button(4):
+                elif joystick.get_button(0):
                     print(f"Joystick button 4 pressed: Resuming from frame {last_frame_number + 1}")
                     motor1.forward(speed)
                     motor2.forward(speed)
