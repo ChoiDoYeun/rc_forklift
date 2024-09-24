@@ -42,6 +42,7 @@ class MotorController:
 motor1 = MotorController(18, 17, 27)
 motor2 = MotorController(16, 13, 26)
 speed = 100
+frame_time = 1/60
 
 # PCA9685 모듈 초기화 (서보모터)
 kit = ServoKit(channels=16)
@@ -117,7 +118,7 @@ def control_servo_from_csv(start_frame=0):
             servo_angle = int(row[0])  # 서보 각도 값
             kit.servo[0].angle = servo_angle  # 서보모터에 각도 적용
             print(f"Frame {frame_count}: Servo Angle Set to {servo_angle}")
-            time.sleep(0.1)  # 0.1초 대기 (프레임당 0.1초)
+            time.sleep(farme_time)
             frame_count += 1
         last_frame_number = frame_count  # 마지막 프레임 번호 저장
         # CSV 파일 끝에 도달하면 모터 정지
