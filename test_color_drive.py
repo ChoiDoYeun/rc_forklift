@@ -45,6 +45,14 @@ motor2 = MotorController(16, 13, 26)
 speed = 100
 frame_time = 0.1
 
+# 각 색상의 HSV 범위 정의
+colors = {
+    "red": [(0, 120, 70), (10, 255, 255)],
+    "blue": [(110, 50, 50), (130, 255, 255)],
+    "yellow": [(20, 100, 100), (30, 255, 255)],
+    "black": [(0, 0, 0), (180, 255, 50)]
+}
+
 # PCA9685 모듈 초기화 (서보모터)
 kit = ServoKit(channels=16)
 kit.servo[0].angle = 90  # 서보모터 중립 (채널 0)
