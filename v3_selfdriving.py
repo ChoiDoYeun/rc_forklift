@@ -90,7 +90,7 @@ with open(predicted_servo_angle_path, 'r') as file:
         servo_angle = int(row[0])  # 서보 각도 값
         kit.servo[0].angle = servo_angle  # 서보모터에 각도 적용
         print(f"Frame {frame_count}: Servo Angle Set to {servo_angle}")
-        time.sleep(1/60)  # 0.1초 대기 (프레임당 0.1초)
+        time.sleep(0.1)  # 0.1초 대기 (프레임당 0.1초)
         frame_count += 1
 
 # CSV 파일 끝까지 읽은 후 모터 정지
