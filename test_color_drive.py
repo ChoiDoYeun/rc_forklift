@@ -130,17 +130,17 @@ def color_based_motor_control():
         # 조이스틱 버튼 상태 확인
         for event in pygame.event.get():
             if event.type == pygame.JOYBUTTONDOWN:
-                # 조이스틱 버튼 11로 모터 시작
-                if joystick.get_button(11):
-                    print("Joystick button 11 pressed: Motor started")
+                # 조이스틱 버튼 14로 모터 시작
+                if joystick.get_button(14):
+                    print("Joystick button 14 pressed: Motor started")
                     motor1.forward(speed)
                     motor2.forward(speed)
                     color_detection_active = False
                     return
 
-                # 조이스틱 버튼 10으로 서보모터 재개
-                elif joystick.get_button(10):
-                    print(f"Joystick button 10 pressed: Resuming from frame {last_frame_number + 1}")
+                # 조이스틱 버튼 4으로 서보모터 재개
+                elif joystick.get_button(4):
+                    print(f"Joystick button 4 pressed: Resuming from frame {last_frame_number + 1}")
                     motor1.forward(speed)
                     motor2.forward(speed)
                     stop_servo_event.clear()
