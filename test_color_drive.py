@@ -131,10 +131,11 @@ def control_servo_from_csv(start_frame=0):
             print(f"Frame {frame_count}: Servo Angle Set to {servo_angle}")
             time.sleep(frame_time)
             frame_count += 1
-        last_frame_number = frame_count  # 마지막 프레임 번호 저장
+            
         # CSV 파일 끝에 도달하면 모터 정지
         motor1.stop()
         motor2.stop()
+        last_frame_number = frame_count  # 마지막 프레임 번호 저장
         print("CSV 파일의 모든 프레임을 읽었으므로 모터가 정지됩니다.")
 
 # 색상 감지 및 모터 제어 함수
