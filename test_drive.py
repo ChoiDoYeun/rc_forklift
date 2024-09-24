@@ -46,7 +46,7 @@ kit.servo[0].angle = 90  # 스티어링 휠 서보모터 중립 (채널 0)
 kit.servo[1].angle = 85
 kit.servo[2].angle = 90
 
-speed = 40
+speed = 100
 
 # 모터를 앞으로 움직이기
 motor1.forward(speed)
