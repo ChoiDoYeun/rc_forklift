@@ -43,7 +43,7 @@ class MotorController:
 motor1 = MotorController(18, 17, 27)
 motor2 = MotorController(16, 13, 26)
 speed = 100
-frame_time = 0.995
+frame_time = 0.0995
 
 # PCA9685 모듈 초기화 (서보모터)
 kit = ServoKit(channels=16)
