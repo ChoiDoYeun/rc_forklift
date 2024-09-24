@@ -5,7 +5,6 @@ import cv2  # OpenCV 사용
 import csv
 import os  # 폴더 생성에 사용
 from adafruit_servokit import ServoKit
-import threading
 
 # GPIO 설정
 GPIO.setmode(GPIO.BCM)
@@ -70,10 +69,6 @@ with open(predicted_servo_angle_path, 'r') as file:
 # CSV 파일 끝까지 읽은 후 모터 정지
 motor1.stop()
 motor2.stop()
-
-# 비디오 캡처 스레드 종료 요청
-stop_event.set()
-video_thread.join()
 
 # 동작 종료 시 모터와 GPIO 정리
 motor1.cleanup()
