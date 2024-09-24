@@ -24,7 +24,7 @@ class MotorController:
     def set_speed(self, speed):
         self.pwm.ChangeDutyCycle(speed)
 
-    def forward(self, speed=40):
+    def forward(self, speed=100):
         self.set_speed(speed)
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
@@ -53,7 +53,7 @@ motor1.forward(speed=100)
 motor2.forward(speed=100)
 
 # predicted_servo_angle.csv 파일에서 각 프레임당 servo_angle 값을 불러오기
-predicted_servo_angle_path = 'predicted_servo_angle.csv'  # 예측 CSV 파일 경로
+predicted_servo_angle_path = 'test_predicted_servo_angle.csv'  # 예측 CSV 파일 경로
 
 with open(predicted_servo_angle_path, 'r') as file:
     reader = csv.reader(file)
