@@ -77,7 +77,7 @@ drive_dir = ''
 csv_file_path = ''
 
 # 속도 제어 변수
-speed = 100  # 고정 속도 40
+speed = 0  # 속도 초기값
 motor_running = False  # 모터 상태 (처음엔 정지 상태)
 
 # CSV 파일 열기 및 저장 제어 함수
@@ -136,7 +136,7 @@ while running:
     for event in pygame.event.get():
         # 버튼 이벤트 처리
         if event.type == pygame.JOYBUTTONDOWN:
-            if event.button == 14:  # 버튼 10 : 정지 버튼
+            if event.button == 14:  # 버튼 14: 정지 버튼
                 motor1.stop()
                 motor2.stop()
                 motor_running = False  # 모터 정지 상태
@@ -148,17 +148,18 @@ while running:
                     stop_saving()
 
             if event.button == 4:  # 버튼 3: 저장 시작
-                if not saving_data:
+                if not saving_data and speed == 100:  # 모터 속도가 100일 때만 저장 시작
                     saving_data = True
                     start_saving()
 
         elif event.type == pygame.QUIT:
             running = False
 
-    # 우측 스틱을 위로 올리면 모터가 40의 속도로 구동됨
+    # 우측 스틱을 위로 올리면 모터가 구동됨
     axis_value_speed = joystick.get_axis(3)  # 우측 스틱 위아래 축
     if axis_value_speed < -0.1:  # 스틱을 위로 올리면 모터 작동
         if not motor_running:  # 모터가 정지 상태일 때만 실행
+            speed = 100  # 모터 속도를 100으로 설정
             motor1.forward(speed)
             motor2.forward(speed)
             motor_running = True
@@ -175,4 +176,4 @@ while running:
         print(f"프레임 {frame_count}, 서보 각도 {servo_angle}, 속도 {speed if motor_running else 0} 저장 완료")
         frame_count += 1
 
-    time.sleep(1/60)
+    time.sleep(0.1)
