@@ -41,6 +41,7 @@ class MotorController:
 # 모터 초기화
 motor1 = MotorController(18, 17, 27)
 motor2 = MotorController(16, 13, 26)
+speed = 100
 
 # PCA9685 모듈 초기화 (서보모터)
 kit = ServoKit(channels=16)
@@ -48,7 +49,7 @@ kit = ServoKit(channels=16)
 # 서보모터 초기 설정
 kit.servo[0].angle = 90  # 스티어링 휠 서보모터 중립 (채널 0)
 kit.servo[1].angle = 85
-kit.servo[2].angle = 110
+kit.servo[2].angle = 90
 
 # 각 색상의 HSV 범위 정의
 colors = {
@@ -98,7 +99,7 @@ def wait_for_start_command():
 # 서보 앵글 제어 함수 (CSV 파일에서 각도 불러오기)
 def control_servo_from_csv(start_frame=0):
     global last_frame_number
-    predicted_servo_angle_path = 'v2_predicted_servo_angle.csv'  # 예측 CSV 파일 경로
+    predicted_servo_angle_path = 'predicted_servo_angle.csv'  # 예측 CSV 파일 경로
 
     with open(predicted_servo_angle_path, 'r') as file:
         reader = csv.reader(file)
@@ -155,8 +156,8 @@ def color_based_motor_control():
                             return
                         else:
                             # 다른 색상이 감지되면 계속 주행
-                            motor1.forward(40)
-                            motor2.forward(40)
+                            motor1.forward(speed)
+                            motor2.forward(speed)
                             print(f"'{color_name}' detected. Motors running...")
 
 # 메인 실행 로직
@@ -167,8 +168,8 @@ try:
     # 사용자 명령 대기
     if wait_for_start_command():
         # 모터 동작 시작
-        motor1.forward(40)
-        motor2.forward(40)
+        motor1.forward(speed)
+        motor2.forward(speed)
 
         # 서보모터 제어 스레드 시작
         servo_thread = threading.Thread(target=control_servo_from_csv, args=(last_frame_number,))
@@ -188,8 +189,8 @@ try:
                 print(f"Resuming servo operation from frame {last_frame_number + 1}...")
                 time.sleep(waiting_time)  # resume 후 0.5초 대기
                 # 모터 다시 앞으로 움직이기
-                motor1.forward(40)
-                motor2.forward(40)
+                motor1.forward(speed)
+                motor2.forward(speed)
                 # 서보모터 재개 이벤트 초기화
                 stop_servo_event.clear()
                 # 서보모터 제어 스레드 재개
