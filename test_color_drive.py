@@ -119,7 +119,7 @@ def control_servo_from_csv(start_frame=0):
             servo_angle = float(row[1])  # 서보 각도 값
             kit.servo[0].angle = servo_angle  # 서보모터에 각도 적용
             print(f"Frame {frame_count}: Servo Angle Set to {servo_angle}")
-            time.sleep(farme_time)
+            time.sleep(frame_time)
             frame_count += 1
         last_frame_number = frame_count  # 마지막 프레임 번호 저장
         # CSV 파일 끝에 도달하면 모터 정지
