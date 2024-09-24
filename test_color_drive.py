@@ -59,7 +59,7 @@ joystick.init()
 
 # 각종 변수 및 플래그
 initial_color = None
-waiting_time = 0.5  # 모터가 동작한 후 대기 시간
+waiting_time = 0.25  # 모터가 동작한 후 대기 시간
 last_frame_number = 0  # 마지막으로 읽은 프레임 번호
 stop_servo_event = threading.Event()  # 서보모터를 중지하는 이벤트
 resume_lock = threading.Lock()  # 서보모터 재개 시 락
