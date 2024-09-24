@@ -23,7 +23,7 @@ class MotorController:
     def set_speed(self, speed):
         self.pwm.ChangeDutyCycle(speed)
 
-    def forward(self, speed=40):
+    def forward(self, speed=70):
         self.set_speed(speed)
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
