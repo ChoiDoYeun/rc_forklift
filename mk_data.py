@@ -129,7 +129,7 @@ def stop_saving():
 
 # 서보모터 각도 초기값 설정
 servo_angle = 85  # 스티어링 서보모터 중립
-frame_time = 1/120
+frame_time = 0.1
 
 # 메인 루프
 running = True
