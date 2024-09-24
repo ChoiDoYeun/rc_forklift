@@ -23,7 +23,7 @@ class MotorController:
     def set_speed(self, speed):
         self.pwm.ChangeDutyCycle(speed)
 
-    def forward(self, speed=70):
+    def forward(self, speed=100):
         self.set_speed(speed)
         GPIO.output(self.in1, GPIO.HIGH)
         GPIO.output(self.in2, GPIO.LOW)
@@ -77,7 +77,7 @@ drive_dir = ''
 csv_file_path = ''
 
 # 속도 제어 변수
-speed = 70  # 고정 속도 40
+speed = 100  # 고정 속도 40
 motor_running = False  # 모터 상태 (처음엔 정지 상태)
 
 # CSV 파일 열기 및 저장 제어 함수
