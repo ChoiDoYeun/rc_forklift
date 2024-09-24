@@ -133,6 +133,7 @@ frame_time = 0.1
 
 # 메인 루프
 running = True
+button_4_pressed = False  # 버튼 4가 눌렸는지 확인하는 변수
 while running:
     for event in pygame.event.get():
         # 버튼 이벤트 처리
@@ -148,10 +149,9 @@ while running:
                     saving_data = False
                     stop_saving()
 
-            if event.button == 4:  # 버튼 3: 저장 시작
-                if not saving_data and speed == 100:  # 모터 속도가 100일 때만 저장 시작
-                    saving_data = True
-                    start_saving()
+            if event.button == 4:  # 버튼 4: 저장 대기 (스틱이 올라가야 저장 시작)
+                button_4_pressed = True
+                print("버튼 4가 눌림: 스틱이 위로 올라가면 저장을 시작합니다.")
 
         elif event.type == pygame.QUIT:
             running = False
@@ -164,6 +164,11 @@ while running:
             motor1.forward(speed)
             motor2.forward(speed)
             motor_running = True
+
+        # 스틱이 위로 올라가 있고, 버튼 4가 이미 눌렸다면 저장 시작
+        if button_4_pressed and not saving_data:
+            saving_data = True
+            start_saving()
 
     # 주행 중에도 계속 각도 조정 가능
     axis_value_steer = joystick.get_axis(0)  # 좌측 스틱 (스티어링 휠 서보모터 제어)
@@ -178,3 +183,9 @@ while running:
         frame_count += 1
 
     time.sleep(frame_time)
+
+# 종료 시 리소스 정리
+motor1.cleanup()
+motor2.cleanup()
+GPIO.cleanup()
+pygame.quit()
