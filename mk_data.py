@@ -46,10 +46,6 @@ kit = ServoKit(channels=16)
 # 서보모터 초기 설정 (스티어링 휠, 채널 0 사용)
 kit.servo[0].angle = 85  # 스티어링 휠 서보모터 중립 (채널 0)
 
-# 카메라 조향용 서보모터 (채널 1과 채널 2 사용)
-kit.servo[1].angle = 90  # 첫 번째 카메라 서보모터 초기 설정 (채널 1)
-kit.servo[2].angle = 90  # 두 번째 카메라 서보모터 초기 설정 (채널 2)
-
 # Pygame 초기화
 pygame.init()
 
@@ -142,7 +138,9 @@ while running:
                 motor1.stop()
                 motor2.stop()
                 motor_running = False  # 모터 정지 상태
-                print("모터 정지")
+                saving_data = False  # 모터가 멈추면 저장도 멈춤
+                stop_saving()
+                print("모터 정지 및 저장 중단")
 
             if event.button == 0:  # 버튼 0: 저장 중단
                 if saving_data:
@@ -164,9 +162,10 @@ while running:
             motor1.forward(speed)
             motor2.forward(speed)
             motor_running = True
+            print("모터 구동 시작")
 
-        # 스틱이 위로 올라가 있고, 버튼 4가 이미 눌렸다면 저장 시작
-        if button_4_pressed and not saving_data:
+        # 스틱이 위로 올라가 있고, 버튼 4가 이미 눌렸으며, 모터가 작동 중일 때만 저장 시작
+        if button_4_pressed and not saving_data and motor_running:
             saving_data = True
             start_saving()
 
