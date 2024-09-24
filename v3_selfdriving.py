@@ -47,11 +47,11 @@ kit = ServoKit(channels=16)
 # 서보모터 초기 설정
 kit.servo[0].angle = 90  # 스티어링 휠 서보모터 중립 (채널 0)
 kit.servo[1].angle = 85
-kit.servo[2].angle = 110
+kit.servo[2].angle = 90
 
 # 모터를 앞으로 움직이기 (속도 40으로 설정)
-motor1.forward(speed=40)
-motor2.forward(speed=40)
+motor1.forward(speed=100)
+motor2.forward(speed=100)
 
 # 비디오 캡처 함수
 def video_capture(stop_event):
@@ -68,7 +68,6 @@ def video_capture(stop_event):
             out.write(frame)
         else:
             break
-        time.sleep(1/60)  # 프레임당 0.1초 대기
 
     cap.release()
     out.release()
@@ -81,7 +80,7 @@ video_thread = threading.Thread(target=video_capture, args=(stop_event,))
 video_thread.start()
 
 # predicted_servo_angle.csv 파일에서 각 프레임당 servo_angle 값을 불러오기
-predicted_servo_angle_path = 'v2_predicted_servo_angle.csv'  # 예측 CSV 파일 경로
+predicted_servo_angle_path = 'predicted_servo_angle.csv'  # 예측 CSV 파일 경로
 
 with open(predicted_servo_angle_path, 'r') as file:
     reader = csv.reader(file)
@@ -91,7 +90,7 @@ with open(predicted_servo_angle_path, 'r') as file:
         servo_angle = int(row[0])  # 서보 각도 값
         kit.servo[0].angle = servo_angle  # 서보모터에 각도 적용
         print(f"Frame {frame_count}: Servo Angle Set to {servo_angle}")
-        time.sleep(0.1)  # 0.1초 대기 (프레임당 0.1초)
+        time.sleep(1/60)  # 0.1초 대기 (프레임당 0.1초)
         frame_count += 1
 
 # CSV 파일 끝까지 읽은 후 모터 정지
