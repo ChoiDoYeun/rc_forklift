@@ -100,7 +100,7 @@ def wait_for_start_command():
 # 서보 앵글 제어 함수 (CSV 파일에서 각도 불러오기)
 def control_servo_from_csv(start_frame=0):
     global last_frame_number
-    predicted_servo_angle_path = 'predicted_servo_angle.csv'  # 예측 CSV 파일 경로
+    predicted_servo_angle_path = 'v3_predicted_servo_angle.csv'  # 예측 CSV 파일 경로
 
     with open(predicted_servo_angle_path, 'r') as file:
         reader = csv.reader(file)
