@@ -91,51 +91,40 @@ def control_motors(left_speed, right_speed):
 
 def process_image(frame):
     height, width = frame.shape[:2]
-    roi = frame[int(height*0.5):height, 0:width]
+    # 이미지 크기를 축소하여 처리 속도 향상 (예: 50% 축소)
+    frame_small = cv2.resize(frame, (width // 2, height // 2))
+    height_small, width_small = frame_small.shape[:2]
+    roi = frame_small[int(height_small*0.5):height_small, 0:width_small]
 
-    hls = cv2.cvtColor(roi, cv2.COLOR_BGR2HLS)
-    s_channel = hls[:, :, 2]
-
-    # CLAHE 적용 (조명 변화에 강인한 이미지 생성)
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-    equalized = clahe.apply(s_channel)
+    # 그레이스케일로 변환
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
 
     # 가우시안 블러 적용
-    blurred = cv2.GaussianBlur(equalized, (5, 5), 0)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
 
-    # 이미지의 중간값 계산
-    v = np.median(blurred)
+    # 적응형 이진화 적용 (조명 변화에 강인함)
+    thresh = cv2.adaptiveThreshold(
+        blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C,
+        cv2.THRESH_BINARY_INV, 11, 2
+    )
 
-    # 중간값을 기반으로 Canny 엣지 검출의 임계값 자동 설정
-    sigma = 0.33
-    lower = int(max(0, (1.0 - sigma) * v))
-    upper = int(min(255, (1.0 + sigma) * v))
-    canny_edges = cv2.Canny(blurred, lower, upper)
-
-    # HoughLinesP를 사용하여 선 감지
-    lines = cv2.HoughLinesP(canny_edges, 1, np.pi / 180, threshold=20, minLineLength=5, maxLineGap=10)
+    # 윤곽선 검출
+    contours, _ = cv2.findContours(
+        thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+    )
 
     line_center_x, diff = None, None
     found = False
 
-    if lines is not None:
-        x_positions = []
-        for line in lines:
-            x1, y1, x2, y2 = line[0]
-            x_mid = (x1 + x2) // 2
-            x_positions.append(x_mid)
-
-        x_positions.sort()
-        num_positions = len(x_positions)
-
-        if num_positions >= 2:
-            left_x = x_positions[0]
-            right_x = x_positions[-1]
-            line_center_x = (left_x + right_x) // 2
-            diff = line_center_x - (width // 2)
-            found = True
-        else:
-            line_center_x = x_positions[0]
+    if contours:
+        # 가장 큰 윤곽선 찾기 (선으로 가정)
+        largest_contour = max(contours, key=cv2.contourArea)
+        # 윤곽선의 순간 중심 계산
+        M = cv2.moments(largest_contour)
+        if M['m00'] != 0:
+            line_center_x = int(M['m10'] / M['m00'])
+            # 스케일을 원래 크기로 변환
+            line_center_x = int(line_center_x * 2)
             diff = line_center_x - (width // 2)
             found = True
 
@@ -145,19 +134,21 @@ def process_image(frame):
         print("선을 감지하지 못했습니다.")
 
     return line_center_x, diff
+
 # 메인 제어 루프
 def main():
     # 카메라 설정
     cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 424)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+    cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # 버퍼 크기를 1로 설정하여 지연 최소화
 
     if not cap.isOpened():
         print("카메라를 열 수 없습니다.")
         return
 
     prev_time = time.time()  # 이전 시간을 저장
-    detection_interval = 0.0083  # 라인 검출 간격 (0.01초, 즉 100FPS 정도로 설정)
+    detection_interval = 0.0083  # 라인 검출 간격 (약 120FPS)
 
     try:
         while True:
