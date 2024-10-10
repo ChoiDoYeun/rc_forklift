@@ -100,7 +100,7 @@ def process_image(frame):
     
 
     # 가우시안 블러 적용
-    blurred = cv2.GaussianBlur(enhanced_l, (5, 5), 0)
+    blurred = cv2.GaussianBlur(l_channel, (5, 5), 0)
 
     # 적응형 이진화 적용
     adaptive_thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C, 
