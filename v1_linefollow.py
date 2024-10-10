@@ -96,11 +96,11 @@ def process_image(frame):
 
     # HLS 색 공간으로 변환
     hls = cv2.cvtColor(roi, cv2.COLOR_BGR2HLS)
-    l_channel = hls[:, :, 1]  # L 채널 선택 (조명에 강건한 채널)
+    s_channel = hls[:, :, 2]  # S 채널 선택
     
 
     # 가우시안 블러 적용
-    blurred = cv2.GaussianBlur(l_channel, (5, 5), 0)
+    blurred = cv2.GaussianBlur(s_channel, (5, 5), 0)
 
     # 적응형 이진화 적용
     adaptive_thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C, 
