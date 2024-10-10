@@ -98,15 +98,16 @@ def process_image(frame):
     hls = cv2.cvtColor(roi, cv2.COLOR_BGR2HLS)
     l_channel = hls[:, :, 1]  # L 채널 선택 (조명에 강건한 채널)
     
-    # CLAHE를 사용하여 명암비 향상
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    enhanced_l = clahe.apply(l_channel)
 
     # 가우시안 블러 적용
     blurred = cv2.GaussianBlur(enhanced_l, (5, 5), 0)
 
+    # 적응형 이진화 적용
+    adaptive_thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C, 
+                                            cv2.THRESH_BINARY_INV, 11, 2)
+
     # 캐니 엣지 검출
-    canny_edges = cv2.Canny(blurred, 50, 150)
+    canny_edges = cv2.Canny(adaptive_thresh, 50, 150)
 
     # 허프 변환을 이용한 라인 검출
     lines = cv2.HoughLinesP(canny_edges, 1, np.pi / 180, threshold=20, minLineLength=5, maxLineGap=10)
@@ -141,7 +142,6 @@ def process_image(frame):
         print("선을 감지하지 못했습니다.")
 
     return line_center_x, diff
-
 # 메인 제어 루프
 def main():
     # 카메라 설정
