@@ -94,10 +94,21 @@ def process_image(frame):
     height, width = frame.shape[:2]
     roi = frame[int(height*0.5):height, 0:width]
 
+    # HLS 색 공간으로 변환
     hls = cv2.cvtColor(roi, cv2.COLOR_BGR2HLS)
-    s_channel = hls[:, :, 2]
-    blurred = cv2.GaussianBlur(s_channel, (5, 5), 0)
+    l_channel = hls[:, :, 1]  # L 채널 선택 (조명에 강건한 채널)
+    
+    # CLAHE를 사용하여 명암비 향상
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    enhanced_l = clahe.apply(l_channel)
+
+    # 가우시안 블러 적용
+    blurred = cv2.GaussianBlur(enhanced_l, (5, 5), 0)
+
+    # 캐니 엣지 검출
     canny_edges = cv2.Canny(blurred, 50, 150)
+
+    # 허프 변환을 이용한 라인 검출
     lines = cv2.HoughLinesP(canny_edges, 1, np.pi / 180, threshold=20, minLineLength=5, maxLineGap=10)
 
     line_center_x, diff = None, None
