@@ -169,14 +169,10 @@ def main():
                     continue
 
                 # PID 제어 값 계산
-                print(f"diff : {diff}")
-                if -70 <= diff <= 70:
-                    pid_value = 0  # error가 -90에서 90 사이일 경우 PID 보정을 하지 않음
-                else:
-                    pid_value = pid_control(diff, dt)  # error가 범위를 벗어나면 PID 보정 적용
+                pid_value = pid_control(diff, dt)  # error가 범위를 벗어나면 PID 보정 적용
 
                 # 속도 계산
-                base_speed = 50  # 기본 속도
+                base_speed = 70  # 기본 속도
                 left_motor_speed = base_speed + pid_value  # 왼쪽 속도 제어
                 right_motor_speed = base_speed - pid_value  # 오른쪽 속도 제어
 
