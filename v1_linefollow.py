@@ -89,27 +89,30 @@ def control_motors(left_speed, right_speed):
         motor2.backward(-right_speed)
         motor4.backward(-right_speed)
 
-# 이미지 처리 함수
 def process_image(frame):
     height, width = frame.shape[:2]
     roi = frame[int(height*0.5):height, 0:width]
 
-    # HLS 색 공간으로 변환
-    hls = cv2.cvtColor(roi, cv2.COLOR_BGR2HLS)
-    s_channel = hls[:, :, 2]  # S 채널 선택
-    
+    # 그레이스케일로 변환
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+
+    # CLAHE 적용 (조명 변화에 강인한 이미지 생성)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    equalized = clahe.apply(gray)
 
     # 가우시안 블러 적용
-    blurred = cv2.GaussianBlur(s_channel, (5, 5), 0)
+    blurred = cv2.GaussianBlur(equalized, (5, 5), 0)
 
-    # 적응형 이진화 적용
-    adaptive_thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C, 
-                                            cv2.THRESH_BINARY_INV, 11, 2)
+    # 이미지의 중간값 계산
+    v = np.median(blurred)
 
-    # 캐니 엣지 검출
-    canny_edges = cv2.Canny(adaptive_thresh, 50, 150)
+    # 중간값을 기반으로 Canny 엣지 검출의 임계값 자동 설정
+    sigma = 0.33
+    lower = int(max(0, (1.0 - sigma) * v))
+    upper = int(min(255, (1.0 + sigma) * v))
+    canny_edges = cv2.Canny(blurred, lower, upper)
 
-    # 허프 변환을 이용한 라인 검출
+    # HoughLinesP를 사용하여 선 감지
     lines = cv2.HoughLinesP(canny_edges, 1, np.pi / 180, threshold=20, minLineLength=5, maxLineGap=10)
 
     line_center_x, diff = None, None
