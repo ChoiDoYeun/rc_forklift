@@ -91,52 +91,43 @@ def control_motors(left_speed, right_speed):
 
 # 이미지 처리 함수
 def process_image(frame):
-    # 이미지를 HLS로 변환
-    hls = cv2.cvtColor(frame, cv2.COLOR_BGR2HLS)
+    height, width = frame.shape[:2]
+    roi = frame[int(height*0.5):height, 0:width]
 
-    # S 채널 추출
+    hls = cv2.cvtColor(roi, cv2.COLOR_BGR2HLS)
     s_channel = hls[:, :, 2]
-
-    # Gaussian 블러 적용
     blurred = cv2.GaussianBlur(s_channel, (5, 5), 0)
-
-    # Canny 에지 감지 적용
     canny_edges = cv2.Canny(blurred, 50, 150)
-
-    # Hough Line Transform 적용
     lines = cv2.HoughLinesP(canny_edges, 1, np.pi / 180, threshold=20, minLineLength=5, maxLineGap=10)
 
-    # 선의 중앙값 계산
     line_center_x, diff = None, None
     found = False
-    for y in range(240, 50, -1):  # y=240부터 y=0까지 1 단위로 내려감
+
+    if lines is not None:
         x_positions = []
-        if lines is not None:
-            # 각 라인에서 해당 y 좌표에 대한 x 값을 찾음
-            for line in lines:
-                x1, y1, x2, y2 = line[0]
-                if y1 <= y <= y2 or y2 <= y <= y1:
-                    if y2 - y1 !=0:
-                        x = int(x1 + (y - y1) * (x2 - x1) / (y2 - y1))
-                        x_positions.append(x)
-                    else :
-                        x = int((x1+x2)/2)
-                        x_positions.append(x)
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            x_mid = (x1 + x2) // 2
+            x_positions.append(x_mid)
 
-            # 두 선이 감지되었다면, 두 선 사이의 중앙값을 계산
-            if len(x_positions) == 2:
-                left_x, right_x = sorted(x_positions)
-                line_center_x = (left_x + right_x) // 2
-                diff = line_center_x - 211  # 기준점 211
+        x_positions.sort()
+        num_positions = len(x_positions)
 
-                found = True
-                break  # 선을 찾으면 반복 종료
+        if num_positions >= 2:
+            left_x = x_positions[0]
+            right_x = x_positions[-1]
+            line_center_x = (left_x + right_x) // 2
+            diff = line_center_x - (width // 2)
+            found = True
+        else:
+            line_center_x = x_positions[0]
+            diff = line_center_x - (width // 2)
+            found = True
 
-    # 라인이 감지되지 않았을 때 기본값 설정
     if not found:
-        line_center_x = 211  # 중앙으로 설정
+        line_center_x = width // 2
         diff = 0
-        print("no detect")
+        print("선을 감지하지 못했습니다.")
 
     return line_center_x, diff
 
