@@ -93,12 +93,12 @@ def process_image(frame):
     height, width = frame.shape[:2]
     roi = frame[int(height*0.5):height, 0:width]
 
-    # 그레이스케일로 변환
-    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    hls = cv2.cvtColor(roi, cv2.COLOR_BGR2HLS)
+    s_channel = hls[:, :, 2]
 
     # CLAHE 적용 (조명 변화에 강인한 이미지 생성)
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-    equalized = clahe.apply(gray)
+    equalized = clahe.apply(s_channel)
 
     # 가우시안 블러 적용
     blurred = cv2.GaussianBlur(equalized, (5, 5), 0)
